@@ -65,10 +65,10 @@
     @apply text-[0.8125rem];
   }
   .cpe-speeds .cpe-metric:first-child strong {
-    @apply text-primary;
+    @apply text-[#0072b2] dark:text-[#56b4e9];
   }
   .cpe-speeds .cpe-metric:nth-child(2) strong {
-    @apply text-info;
+    @apply text-[#b45309] dark:text-[#e69f00];
   }
   .cpe-traffic svg {
     @apply block h-44 w-full overflow-visible;
@@ -77,19 +77,29 @@
     @apply stroke-border fill-none;
   }
   .cpe-line {
-    @apply fill-none stroke-2;
+    @apply fill-none stroke-2 [vector-effect:non-scaling-stroke];
   }
   .cpe-rx-label {
-    @apply text-primary;
+    @apply text-[#0072b2] dark:text-[#56b4e9];
   }
   .cpe-tx-label {
-    @apply text-info;
+    @apply text-[#b45309] dark:text-[#e69f00];
+  }
+  .cpe-rx-label,
+  .cpe-tx-label {
+    @apply inline-flex items-center gap-1.5;
+    &::before {
+      @apply block w-5 border-t-2 border-current content-[''];
+    }
+  }
+  .cpe-tx-label::before {
+    @apply border-dashed;
   }
   .cpe-line.rx {
-    @apply stroke-primary;
+    @apply stroke-[#0072b2] dark:stroke-[#56b4e9];
   }
   .cpe-line.tx {
-    @apply stroke-info;
+    @apply stroke-[#b45309] [stroke-dasharray:6_4] dark:stroke-[#e69f00];
   }
   .cpe-chart-caption {
     @apply text-muted-foreground mt-3 flex justify-between gap-2 text-[0.8125rem];
@@ -162,4 +172,34 @@
 }
 body:has(.cpe-dashboard) .content-card {
   @apply bg-muted-a30;
+}
+
+.cpe-dashboard {
+  .cpe-chart {
+    @apply relative;
+  }
+  .cpe-chart-tooltip {
+    @apply bg-panel-bg text-foreground border-border pointer-events-none absolute top-2 z-10 w-52 rounded-lg border p-3 text-[0.8125rem] tabular-nums shadow-lg;
+  }
+  .cpe-chart-tooltip strong {
+    @apply mb-2 block font-medium;
+  }
+  .cpe-tooltip-rx {
+    @apply text-[#0072b2] dark:text-[#56b4e9];
+  }
+  .cpe-tooltip-tx {
+    @apply mt-1 text-[#b45309] dark:text-[#e69f00];
+  }
+  .cpe-chart-guide {
+    @apply stroke-muted-foreground fill-none [stroke-dasharray:3_3] [vector-effect:non-scaling-stroke];
+  }
+  .cpe-chart-marker {
+    @apply stroke-panel-bg stroke-2 [vector-effect:non-scaling-stroke];
+  }
+  .cpe-chart-marker.rx {
+    @apply fill-[#0072b2] dark:fill-[#56b4e9];
+  }
+  .cpe-chart-marker.tx {
+    @apply fill-[#b45309] dark:fill-[#e69f00];
+  }
 }

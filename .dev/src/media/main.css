@@ -16,6 +16,8 @@
 @source not "../../scripts/*.client.js";
 @source not "../../tests/*.js";
 @source not "../../docs/*.md";
+@source not "./components/_cpe.css";
+@source not "../resource/view/shadcn/cpe.js";
 
 @custom-variant dark (&:where([data-darkmode=true], [data-darkmode=true] *));
 

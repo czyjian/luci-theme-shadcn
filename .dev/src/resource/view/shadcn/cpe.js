@@ -30,6 +30,34 @@ var current = rpc.declare({
   method: "current",
   params: ["config_section"],
 });
+var trafficHistory = rpc.declare({
+  object: "qmodem.traffic",
+  method: "get",
+  params: ["config_section"],
+});
+// Server samples survive page navigation and browser restarts.
+function mergeHistory(previous, samples, now) {
+  var points = new Map();
+  previous.concat(samples || []).forEach(function (p) {
+    if (
+      !p ||
+      !Number.isFinite(p.time) ||
+      p.time > now + 5 ||
+      p.time < now - 3600 ||
+      !Number.isFinite(p.rx) ||
+      !Number.isFinite(p.tx) ||
+      p.rx < 0 ||
+      p.tx < 0
+    )
+      return;
+    points.set(p.time, { time: p.time, rx: p.rx, tx: p.tx });
+  });
+  return Array.from(points.values())
+    .sort(function (a, b) {
+      return a.time - b.time;
+    })
+    .slice(-60);
+}
 function safe(p) {
   return p.catch(function () {
     return null;
@@ -101,7 +129,8 @@ return view.extend({
       history = [],
       previous = null,
       generation = 0,
-      modemCache = null;
+      modemCache = null,
+      chartHover = null;
     function readModem(id) {
       if (!id) return Promise.resolve([null, null, null]);
       if (
@@ -112,7 +141,12 @@ return view.extend({
         modemCache = {
           id: id,
           time: Date.now(),
-          promise: Promise.all([safe(base(id)), safe(cell(id)), safe(sim(id))]),
+          promise: Promise.all([
+            safe(base(id)),
+            safe(cell(id)),
+            safe(sim(id)),
+            safe(trafficHistory(id)),
+          ]),
         };
       return modemCache.promise;
     }
@@ -145,6 +179,7 @@ return view.extend({
     select.addEventListener("change", function () {
       selected = select.value;
       history = [];
+      chartHover = null;
       previous = null;
       generation++;
       refresh();
@@ -179,6 +214,14 @@ return view.extend({
           : null;
         var neighborResult = r[7];
         var modemData = r[4];
+        var snapshot = modemData[3];
+        if (
+          snapshot &&
+          snapshot.config &&
+          snapshot.config.enabled &&
+          !snapshot.stale
+        )
+          history = mergeHistory(history, snapshot.live, Date.now() / 1000);
         r = [
           r[0],
           r[1],
@@ -247,6 +290,25 @@ return view.extend({
           }),
           iface = section && section.network,
           counters = dev[iface] && dev[iface].statistics;
+        var candidates = nets.filter(function (n) {
+          return uci.get("network", n.getName(), "modem_config") === id;
+        });
+        if (!candidates.length)
+          candidates = nets.filter(function (n) {
+            var device = n.getL3Device();
+            return device && device.getName() === iface;
+          });
+        var monitoredNetwork =
+          candidates.find(function (n) {
+            return n.getName() === id;
+          }) ||
+          candidates.find(function (n) {
+            return uci.get("network", n.getName(), "proto") !== "dhcpv6";
+          }) ||
+          candidates[0];
+        var interfaceName = monitoredNetwork
+          ? monitoredNetwork.getName()
+          : iface;
         var now = performance.now(),
           rx = null,
           tx = null;
@@ -270,8 +332,20 @@ return view.extend({
             time: now,
           };
         if (rx != null) {
-          history.push({ rx: rx, tx: tx });
-          if (history.length > 60) history.shift();
+          history = mergeHistory(
+            history,
+            [
+              {
+                time:
+                  t && t.now && t.config && t.config.enabled && !t.stale
+                    ? t.now
+                    : Date.now() / 1000,
+                rx: rx,
+                tx: tx,
+              },
+            ],
+            Date.now() / 1000,
+          );
         }
         var connected = b.connect_status === "Yes",
           mode = c.network_mode || "等待网络信息",
@@ -310,7 +384,7 @@ return view.extend({
                 tx == null ? "—" : ((tx * 8) / 1e6).toFixed(2),
                 "Mbps",
               ),
-              metric("监测接口", iface || "—", "最近 60 个采样点"),
+              metric("监测接口", interfaceName || "—", "最近 60 个采样点"),
             ]),
           ],
           "cpe-traffic",
@@ -319,7 +393,10 @@ return view.extend({
           svg = document.createElementNS(ns, "svg");
         svg.setAttribute("viewBox", "0 0 720 170");
         svg.setAttribute("role", "img");
-        svg.setAttribute("aria-label", "蜂窝接口实时下载和上传速率曲线");
+        svg.setAttribute(
+          "aria-label",
+          "蜂窝接口实时速率：下载为蓝色实线，上传为橙色虚线",
+        );
         [30, 75, 120, 165].forEach(function (y) {
           var l = document.createElementNS(ns, "path");
           l.setAttribute("d", "M0 " + y + "H720");
@@ -342,7 +419,7 @@ return view.extend({
             history
               .map(function (p, i) {
                 return (
-                  (i ? "L" : "M") +
+                  (i && p.time - history[i - 1].time <= 30 ? "L" : "M") +
                   (((60 - history.length + i) * 720) / 59).toFixed(1) +
                   " " +
                   (160 - (p[key] / max) * 140).toFixed(1)
@@ -353,13 +430,131 @@ return view.extend({
           line.setAttribute("class", "cpe-line " + key);
           svg.appendChild(line);
         });
-        speed.appendChild(svg);
+        svg.setAttribute("preserveAspectRatio", "none");
+        svg.setAttribute("tabindex", "0");
+        svg.setAttribute(
+          "aria-label",
+          "实时速率曲线，悬停或使用左右方向键查看采样时间与速率",
+        );
+        var chart = E("div", { class: "cpe-chart" });
+        var tooltip = E("div", {
+          class: "cpe-chart-tooltip",
+          hidden: true,
+          role: "status",
+        });
+        var guide = document.createElementNS(ns, "path");
+        guide.setAttribute("class", "cpe-chart-guide");
+        guide.style.display = "none";
+        svg.appendChild(guide);
+        var markers = ["rx", "tx"].map(function (key) {
+          var dot = document.createElementNS(ns, "circle");
+          dot.setAttribute("class", "cpe-chart-marker " + key);
+          dot.setAttribute("r", "3");
+          dot.style.display = "none";
+          svg.appendChild(dot);
+          return dot;
+        });
+        function hideTooltip() {
+          chartHover = null;
+          tooltip.hidden = true;
+          guide.style.display = "none";
+          markers.forEach(function (dot) {
+            dot.style.display = "none";
+          });
+        }
+        function showSample(fraction) {
+          if (!history.length) return;
+          var slot = Math.max(0, Math.min(59, fraction * 59)),
+            start = 60 - history.length;
+          if (slot < start - 0.5) {
+            hideTooltip();
+            return;
+          }
+          var index = Math.max(
+              0,
+              Math.min(history.length - 1, Math.round(slot - start)),
+            ),
+            point = history[index];
+          var x = ((start + index) * 720) / 59;
+          chartHover = fraction;
+          guide.setAttribute("d", "M" + x + " 0V170");
+          guide.style.display = "";
+          markers.forEach(function (dot, i) {
+            dot.setAttribute("cx", String(x));
+            dot.setAttribute(
+              "cy",
+              String(160 - (point[i ? "tx" : "rx"] / max) * 140),
+            );
+            dot.style.display = "";
+          });
+          tooltip.replaceChildren(
+            E(
+              "strong",
+              {},
+              new Date(point.time * 1000).toLocaleTimeString("zh-CN", {
+                hour12: false,
+              }),
+            ),
+            E(
+              "div",
+              { class: "cpe-tooltip-rx" },
+              "↓ 下载 " + ((point.rx * 8) / 1e6).toFixed(2) + " Mbps",
+            ),
+            E(
+              "div",
+              { class: "cpe-tooltip-tx" },
+              "↑ 上传 " + ((point.tx * 8) / 1e6).toFixed(2) + " Mbps",
+            ),
+          );
+          tooltip.hidden = false;
+          var width = chart.getBoundingClientRect().width;
+          tooltip.style.left =
+            Math.max(
+              0,
+              Math.min(
+                width - tooltip.offsetWidth,
+                (x / 720) * width - tooltip.offsetWidth / 2,
+              ),
+            ) + "px";
+        }
+        function pointAt(event) {
+          var rect = svg.getBoundingClientRect();
+          if (rect.width) showSample((event.clientX - rect.left) / rect.width);
+        }
+        svg.addEventListener("pointermove", pointAt);
+        svg.addEventListener("pointerdown", pointAt);
+        svg.addEventListener("pointerleave", function (event) {
+          if (svg.isConnected && event.pointerType !== "touch") hideTooltip();
+        });
+        svg.addEventListener("keydown", function (event) {
+          if (!history.length) return;
+          var index =
+            chartHover == null
+              ? history.length - 1
+              : Math.round(chartHover * 59 - (60 - history.length));
+          if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+            event.preventDefault();
+            index = Math.max(
+              0,
+              Math.min(
+                history.length - 1,
+                index + (event.key === "ArrowLeft" ? -1 : 1),
+              ),
+            );
+            showSample((60 - history.length + index) / 59);
+          } else if (event.key === "Escape") hideTooltip();
+        });
+        svg.addEventListener("blur", function () {
+          if (svg.isConnected) hideTooltip();
+        });
+        chart.append(svg, tooltip);
+        speed.appendChild(chart);
         speed.appendChild(
           E("div", { class: "cpe-chart-caption" }, [
             E("span", {}, [
-              E("span", { class: "cpe-rx-label" }, "● 下载"),
+              E("span", { class: "cpe-rx-label" }, "↓ 下载"),
               " / ",
-              E("span", { class: "cpe-tx-label" }, "● 上传"),
+              E("span", { class: "cpe-tx-label" }, "↑ 上传"),
             ]),
             E("span", {}, "刻度上限 " + ((max * 8) / 1e6).toFixed(1) + " Mbps"),
           ]),
@@ -503,6 +698,7 @@ return view.extend({
             link("网络设置", "admin/network/network"),
           ]),
         );
+        if (chartHover != null) showSample(chartHover);
         if (!modems.length)
           live.prepend(
             E(
