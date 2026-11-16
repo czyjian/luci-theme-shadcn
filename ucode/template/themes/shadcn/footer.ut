@@ -9,6 +9,8 @@
     </div>{# /main-wrapper #}
 
     <script>
+      // Theme assets need their own revision in addition to luci-base's version.
+      if (L.env) L.env.resource_version = (L.env.resource_version || '') + '-' + document.body.dataset.assetVersion;
       window.ShadcnSidebar = null;
       L.require('sidebar-shadcn').then(function (m) {
         window.ShadcnSidebar = m;

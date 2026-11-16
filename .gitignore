@@ -20,3 +20,8 @@ docs/superpowers/
 
 # Local page snapshots for the dev /mocks/ route — see "Mock Pages" in CLAUDE.md
 /.dev/mocks/
+
+/dist/
+/artifacts/
+/shadcn-test-source.tar.gz
+/CPE-TEST.md

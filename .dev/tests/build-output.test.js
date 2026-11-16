@@ -73,9 +73,9 @@ test("production assets stay within raw-transfer budgets", () => {
   assert.ok(router <= 18_432, `router-shadcn.js ${router} B exceeds 18 KiB`);
   assert.ok(sidebar <= 6_500, `sidebar-shadcn.js ${sidebar} B exceeds 6.5 KB`);
   assert.ok(
-    // Only the router allowance grows: 18,432 - 16,000 = 2,432 B.
-    main + menu + router + sidebar + font <= 219_932,
-    "admin assets exceed 219,932 B",
+    // Sidebar leaf-link parity and upgrade-cache invalidation add < 1 KB.
+    main + menu + router + sidebar + font <= 220_500,
+    "admin assets exceed 220,500 B",
   );
   assert.ok(login + font + logo <= 60_000, "login assets exceed 60 KB");
 });

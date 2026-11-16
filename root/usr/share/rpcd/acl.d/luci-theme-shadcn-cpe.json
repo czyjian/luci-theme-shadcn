@@ -1,0 +1,27 @@
+{
+  "luci-theme-shadcn-cpe": {
+    "description": "Read-only CPE dashboard",
+    "read": {
+      "ubus": {
+        "system": ["info", "board"],
+        "network.device": ["status"],
+        "network.interface": ["dump"],
+        "luci-rpc": [
+          "getNetworkDevices",
+          "getWirelessDevices",
+          "getHostHints",
+          "getBoardJSON",
+          "getDHCPLeases"
+        ],
+        "qmodem": ["base_info", "cell_info", "sim_info"],
+        "qmodem.traffic": ["current"],
+        "file": ["read", "exec"]
+      },
+      "uci": ["qmodem", "network", "wireless", "luci"],
+      "file": {
+        "/proc/sys/net/netfilter/nf_conntrack_count": ["read"],
+        "/sbin/ip -j neigh show": ["exec"]
+      }
+    }
+  }
+}

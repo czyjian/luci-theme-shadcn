@@ -9,7 +9,7 @@
     "build": "pnpm clean && pnpm gen:tokens && pnpm check:contrast && vite build && pnpm check:colors",
     "check:colors": "node scripts/check-built-css.js",
     "check:contrast": "node scripts/check-token-contrast.js",
-    "gen:tokens": "node scripts/gen-tokens.js",
+    "gen:tokens": "node scripts/gen-tokens.js && node scripts/gen-openclash-compat.js",
     "clean": "luci-theme-clean",
     "format": "prettier --config prettier.config.mjs --ignore-path ../.prettierignore --write .. --ignore-unknown",
     "format:check": "prettier --config prettier.config.mjs --ignore-path ../.prettierignore --check .. --ignore-unknown",

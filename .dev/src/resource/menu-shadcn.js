@@ -13,6 +13,7 @@
     (admin/network/firewall) or opkg (admin/system/opkg) never hit this map
     and were removed as dead entries. */
 const ICON_MAP = {
+  cpe: "radio-tower",
   status: "activity",
   system: "settings",
   network: "network",
@@ -44,6 +45,16 @@ return baseclass.extend({
     this.renderSidebarChrome();
     this.initUciIndicator();
     document.dispatchEvent(new Event("shadcn-sidebar-ready"));
+    // Package upgrades must discard LuCI's cached menu titles and view paths.
+    try {
+      const revision = document.body.dataset.assetVersion;
+      if (sessionStorage.getItem("shadcn.menu.revision") !== revision) {
+        ui.menu.flushCache();
+        sessionStorage.setItem("shadcn.menu.revision", revision);
+      }
+    } catch (e) {
+      if (typeof ui.menu.flushCache === "function") ui.menu.flushCache();
+    }
     ui.menu.load().then((tree) => {
       this.render(tree);
       this.cacheSidebar();
@@ -283,6 +294,9 @@ return baseclass.extend({
           best.classList.add("active");
         } else {
           best.closest(".sidebar-nav-item")?.classList.add("active");
+          sidebar
+            .querySelectorAll(".sidebar-accordion-item")
+            .forEach((item) => item.setAttribute("data-open", "false"));
         }
       }
     }
@@ -323,6 +337,10 @@ return baseclass.extend({
         )
       : null;
     const savedScrollTop = restored ? nav.scrollTop : 0;
+    const activeLeaf = children.some(
+      (section) =>
+        section.name === dp[1] && ui.menu.getChildren(section).length === 0,
+    );
 
     nav.innerHTML = "";
     if (foot) {
@@ -456,7 +474,8 @@ return baseclass.extend({
       nav.querySelectorAll(".sidebar-accordion-item").forEach((item) => {
         item.setAttribute(
           "data-open",
-          openSections.includes(item.getAttribute("data-section"))
+          !activeLeaf &&
+            openSections.includes(item.getAttribute("data-section"))
             ? "true"
             : "false",
         );

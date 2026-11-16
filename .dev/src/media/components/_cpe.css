@@ -1,0 +1,165 @@
+@reference "../main.css";
+.cpe-dashboard {
+  @apply m-0 w-full max-w-none py-1;
+  .cpe-muted {
+    @apply text-muted-foreground;
+  }
+  .cpe-heading {
+    @apply mb-4 flex items-center justify-between gap-4 max-md:flex-col max-md:items-start;
+  }
+  .cpe-heading h2 {
+    @apply m-0 text-2xl font-semibold tracking-tight;
+  }
+  .cpe-heading p {
+    @apply mt-2 text-sm;
+  }
+  .cpe-eyebrow {
+    @apply text-primary mb-2 text-[0.8125rem] font-medium tracking-widest;
+  }
+  .cpe-controls {
+    @apply flex items-center gap-3 text-[0.8125rem] max-md:w-full max-md:justify-between;
+  }
+  .cpe-card {
+    @apply border-border bg-panel-bg mb-4 min-w-0 rounded-xl border p-5 shadow-sm;
+  }
+  .cpe-card h3 {
+    @apply m-0 mb-5 text-sm font-semibold;
+  }
+  .cpe-hero {
+    @apply flex flex-wrap items-center gap-5;
+  }
+  .cpe-hero h3 {
+    @apply mb-1 text-lg;
+  }
+  .cpe-device {
+    @apply mr-auto;
+  }
+  .cpe-device-icon {
+    @apply bg-primary flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold text-white shadow-md;
+  }
+  .cpe-status {
+    @apply bg-muted text-muted-foreground rounded-full px-3 py-1 text-[0.8125rem];
+  }
+  .cpe-status.is-online {
+    @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
+  }
+  .cpe-main-grid {
+    @apply grid grid-cols-3 gap-4 max-lg:grid-cols-1;
+  }
+  .cpe-traffic {
+    @apply col-span-2 max-lg:col-span-1;
+  }
+  .cpe-speeds {
+    @apply mb-5 grid grid-cols-3 gap-4;
+  }
+  .cpe-metric {
+    @apply flex min-w-0 flex-col gap-2;
+  }
+  .cpe-metric > span {
+    @apply text-[0.8125rem];
+  }
+  .cpe-metric strong {
+    @apply text-2xl font-semibold tracking-tight tabular-nums max-md:text-xl;
+  }
+  .cpe-metric small {
+    @apply text-[0.8125rem];
+  }
+  .cpe-speeds .cpe-metric:first-child strong {
+    @apply text-primary;
+  }
+  .cpe-speeds .cpe-metric:nth-child(2) strong {
+    @apply text-info;
+  }
+  .cpe-traffic svg {
+    @apply block h-44 w-full overflow-visible;
+  }
+  .cpe-gridline {
+    @apply stroke-border fill-none;
+  }
+  .cpe-line {
+    @apply fill-none stroke-2;
+  }
+  .cpe-rx-label {
+    @apply text-primary;
+  }
+  .cpe-tx-label {
+    @apply text-info;
+  }
+  .cpe-line.rx {
+    @apply stroke-primary;
+  }
+  .cpe-line.tx {
+    @apply stroke-info;
+  }
+  .cpe-chart-caption {
+    @apply text-muted-foreground mt-3 flex justify-between gap-2 text-[0.8125rem];
+  }
+  .cpe-signal-grid {
+    @apply mb-5 grid grid-cols-3 gap-3;
+  }
+  progress {
+    @apply accent-primary mt-3 h-1.5 w-full overflow-hidden rounded-full;
+  }
+  progress::-webkit-progress-bar {
+    @apply bg-muted rounded-full;
+  }
+  progress::-webkit-progress-value {
+    @apply bg-primary rounded-full;
+  }
+  progress::-moz-progress-bar {
+    @apply bg-primary rounded-full;
+  }
+  .cpe-detail {
+    @apply flex justify-between gap-4 py-2 text-[0.8125rem];
+  }
+  .cpe-detail strong {
+    @apply text-right font-medium;
+  }
+  .cpe-hero .cpe-detail {
+    @apply flex-col gap-1;
+  }
+  .cpe-summary {
+    @apply mb-4 grid grid-cols-4 gap-4 max-md:grid-cols-2;
+  }
+  .cpe-summary > div {
+    @apply border-border bg-panel-bg rounded-xl border p-5 shadow-sm;
+  }
+  .cpe-bottom-grid {
+    @apply grid grid-cols-2 gap-4 max-md:grid-cols-1;
+  }
+  .cpe-client,
+  .cpe-interface {
+    @apply border-border flex items-center gap-3 border-b py-3 last:border-0;
+  }
+  .cpe-client > div:nth-child(2),
+  .cpe-interface > div {
+    @apply mr-auto min-w-0;
+  }
+  .cpe-list strong {
+    @apply block truncate text-sm font-medium;
+  }
+  .cpe-list small {
+    @apply mt-1 block text-[0.8125rem];
+  }
+  .cpe-list > div > span {
+    @apply text-[0.8125rem];
+  }
+  .cpe-client-icon {
+    @apply bg-primary-a10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full;
+  }
+  .cpe-dot {
+    @apply bg-muted-foreground h-2 w-2 shrink-0 rounded-full;
+  }
+  .cpe-dot.is-online {
+    @apply bg-emerald-500;
+  }
+  .cpe-shortcuts {
+    @apply flex flex-wrap justify-center gap-3 pb-3;
+  }
+  .cpe-shortcut {
+    @apply border-border bg-panel-bg text-muted-foreground hover:text-foreground rounded-full border px-4 py-2 text-[0.8125rem] no-underline;
+  }
+}
+body:has(.cpe-dashboard) .content-card {
+  @apply bg-muted-a30;
+}

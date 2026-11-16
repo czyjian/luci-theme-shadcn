@@ -159,6 +159,8 @@
 						} else {
 							var item = best.closest('.sidebar-nav-item');
 							if (item) item.classList.add('active');
+              var accordions = sb.querySelectorAll('.sidebar-accordion-item');
+              for (var n = 0; n < accordions.length; n++) accordions[n].setAttribute('data-open', 'false');
 						}
 					}
 

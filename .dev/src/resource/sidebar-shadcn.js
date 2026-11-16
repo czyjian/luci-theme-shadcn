@@ -248,7 +248,13 @@ return baseclass.extend({
       if (sidebar?.getAttribute("data-collapsed") === "true") return;
 
       const item = trigger.closest(".sidebar-accordion-item");
-      if (!item) return;
+      if (!item) {
+        if (trigger.matches("a.no-sub"))
+          sidebar
+            .querySelectorAll(".sidebar-accordion-item")
+            .forEach((other) => this._closeAccordionItem(other));
+        return;
+      }
 
       const isOpen = item.getAttribute("data-open") === "true";
 

@@ -127,3 +127,55 @@ test("pre-paint sidebar cache is invalidated by identity, version and LuCI menu 
     assert.equal(restore(options), "", JSON.stringify(options));
   assert.match(header, /ctx\?\.authsession/);
 });
+
+test("navigating to a leaf entry clears the previous accordion state", () => {
+  const state = { active: false, open: "true" };
+  const group = {
+    setAttribute: (key, value) => {
+      if (key === "data-open") state.open = value;
+    },
+  };
+  const item = {
+    classList: {
+      add: () => {
+        state.active = true;
+      },
+    },
+  };
+  const leaf = {
+    pathname: "/cgi-bin/luci/admin/cpe",
+    closest: (selector) => (selector === ".sidebar-nav-item" ? item : null),
+    classList: { contains: () => false },
+  };
+  const sidebar = {
+    querySelectorAll: (selector) =>
+      selector === ".active"
+        ? []
+        : selector === ".sidebar-accordion-item"
+          ? [group]
+          : [leaf],
+  };
+  const menu = new Function(
+    "baseclass",
+    "ui",
+    "document",
+    "L",
+    "location",
+    menuSource,
+  )(
+    { extend: (x) => x },
+    {},
+    { getElementById: () => sidebar },
+    {
+      env: { dispatchpath: ["admin", "cpe"] },
+      url: () => "/cgi-bin/luci/admin/cpe",
+    },
+    { href: "http://router/cgi-bin/luci/admin/cpe" },
+  );
+  menu.tree = {};
+  menu.renderBreadcrumb = () => {};
+  menu.renderTabs = () => {};
+  menu.syncRoute();
+  assert.equal(state.active, true);
+  assert.equal(state.open, "false");
+});
