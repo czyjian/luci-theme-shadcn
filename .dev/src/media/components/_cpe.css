@@ -20,22 +20,22 @@
     @apply flex items-center gap-3 text-[0.8125rem] max-md:w-full max-md:justify-between;
   }
   .cpe-card {
-    @apply border-border bg-panel-bg mb-4 min-w-0 rounded-xl border p-5 shadow-sm;
+    @apply border-border bg-panel-bg mb-4 min-w-0 rounded-2xl border p-6 shadow-sm;
   }
   .cpe-card h3 {
-    @apply m-0 mb-5 text-sm font-semibold;
+    @apply m-0 text-sm font-semibold tracking-tight;
   }
   .cpe-hero {
-    @apply flex flex-wrap items-center gap-5;
+    @apply flex flex-wrap items-center gap-5 px-6 py-5;
   }
   .cpe-hero h3 {
-    @apply mb-1 text-lg;
+    @apply mb-1 text-xl tracking-tight;
   }
   .cpe-device {
     @apply mr-auto;
   }
   .cpe-device-icon {
-    @apply bg-primary flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold text-white shadow-md;
+    @apply bg-primary flex h-14 w-14 items-center justify-center rounded-xl text-lg font-bold text-white shadow-md;
   }
   .cpe-status {
     @apply bg-muted text-muted-foreground rounded-full px-3 py-1 text-[0.8125rem];
@@ -44,13 +44,13 @@
     @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
   }
   .cpe-main-grid {
-    @apply grid grid-cols-3 gap-4 max-lg:grid-cols-1;
+    @apply grid grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] gap-4 max-lg:grid-cols-1;
   }
   .cpe-traffic {
-    @apply col-span-2 max-lg:col-span-1;
+    @apply min-w-0;
   }
   .cpe-speeds {
-    @apply mb-5 grid grid-cols-3 gap-4;
+    @apply mb-5 grid grid-cols-[1fr_1fr_auto] gap-5 max-md:grid-cols-2;
   }
   .cpe-metric {
     @apply flex min-w-0 flex-col gap-2;
@@ -71,7 +71,7 @@
     @apply text-[#b45309] dark:text-[#e69f00];
   }
   .cpe-traffic svg {
-    @apply block h-44 w-full overflow-visible;
+    @apply block h-48 w-full overflow-visible max-md:h-44;
   }
   .cpe-gridline {
     @apply stroke-border fill-none;
@@ -132,14 +132,14 @@
     @apply mb-4 grid grid-cols-4 gap-4 max-md:grid-cols-2;
   }
   .cpe-summary > div {
-    @apply border-border bg-panel-bg rounded-xl border p-5 shadow-sm;
+    @apply border-border bg-panel-bg rounded-2xl border p-6 shadow-sm;
   }
   .cpe-bottom-grid {
-    @apply grid grid-cols-2 gap-4 max-md:grid-cols-1;
+    @apply grid grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] gap-4 max-lg:grid-cols-1;
   }
   .cpe-client,
   .cpe-interface {
-    @apply border-border flex items-center gap-3 border-b py-3 last:border-0;
+    @apply border-border flex items-center gap-3 border-b py-3.5 last:border-0;
   }
   .cpe-client > div:nth-child(2),
   .cpe-interface > div {
@@ -155,7 +155,7 @@
     @apply text-[0.8125rem];
   }
   .cpe-client-icon {
-    @apply bg-primary-a10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-full;
+    @apply bg-primary-a10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full;
   }
   .cpe-dot {
     @apply bg-muted-foreground h-2 w-2 shrink-0 rounded-full;
@@ -176,7 +176,7 @@ body:has(.cpe-dashboard) .content-card {
 
 .cpe-dashboard {
   .cpe-chart {
-    @apply relative;
+    @apply relative pl-12;
   }
   .cpe-chart-tooltip {
     @apply bg-panel-bg text-foreground border-border pointer-events-none absolute top-2 z-10 w-52 rounded-lg border p-3 text-[0.8125rem] tabular-nums shadow-lg;
@@ -201,5 +201,118 @@ body:has(.cpe-dashboard) .content-card {
   }
   .cpe-chart-marker.tx {
     @apply fill-[#b45309] dark:fill-[#e69f00];
+  }
+}
+
+.cpe-dashboard {
+  .cpe-card-heading {
+    @apply mb-5 flex items-center justify-between gap-3;
+  }
+  .cpe-hero-meta {
+    @apply flex items-center gap-7 max-md:w-full max-md:gap-5;
+  }
+  .cpe-hero .cpe-detail {
+    @apply gap-1.5 py-0;
+  }
+  .cpe-glyph {
+    @apply inline-flex h-4 w-4 shrink-0 items-center justify-center;
+  }
+  .cpe-glyph svg {
+    @apply h-full w-full;
+  }
+  .cpe-device-icon .cpe-glyph {
+    @apply h-7 w-7;
+  }
+  .cpe-speeds .cpe-metric strong {
+    @apply text-[2rem] leading-none;
+  }
+  .cpe-speeds .cpe-metric:nth-child(3) {
+    @apply border-border border-l pl-5 max-md:hidden;
+  }
+  .cpe-speeds .cpe-metric:nth-child(3) strong {
+    @apply text-base leading-normal;
+  }
+  .cpe-chart-area {
+    @apply fill-[#0072b2]/[0.07] dark:fill-[#56b4e9]/[0.1];
+  }
+  .cpe-chart-axis {
+    @apply text-muted-foreground pointer-events-none absolute top-4 bottom-0 left-0 flex w-10 flex-col justify-between text-[0.6875rem] tabular-nums;
+  }
+  .cpe-time-axis {
+    @apply text-muted-foreground mt-2 mb-3 flex justify-between pl-12 text-[0.6875rem] tabular-nums;
+  }
+  .cpe-signal-grid > div {
+    @apply bg-muted-a30 rounded-xl p-3;
+  }
+  .cpe-signal-grid .cpe-metric {
+    @apply gap-2;
+  }
+  .cpe-signal-grid .cpe-metric strong {
+    @apply text-xl;
+  }
+  .cpe-signals > .cpe-detail {
+    @apply border-border border-t py-2.5 first:border-0;
+  }
+  .cpe-summary > .cpe-metric {
+    @apply gap-3;
+  }
+  .cpe-summary strong {
+    @apply text-[1.75rem] leading-tight;
+  }
+  .cpe-stat-label {
+    @apply flex items-center gap-2.5;
+  }
+  .cpe-stat-icon {
+    @apply bg-primary-a10 text-primary inline-flex h-8 w-8 items-center justify-center rounded-lg;
+  }
+  .cpe-summary > :nth-child(2) .cpe-stat-icon {
+    @apply bg-info-a10 text-info;
+  }
+  .cpe-summary > :nth-child(3) .cpe-stat-icon {
+    @apply bg-success-a10 text-success;
+  }
+  .cpe-summary > :nth-child(4) .cpe-stat-icon {
+    @apply bg-warning-a10 text-warning;
+  }
+  .cpe-count {
+    @apply text-muted-foreground ml-2 text-[0.8125rem] font-normal tabular-nums;
+  }
+  .cpe-manage {
+    @apply text-primary shrink-0 text-[0.8125rem] no-underline hover:underline;
+  }
+  .cpe-interface-icon {
+    @apply bg-muted text-muted-foreground inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+  }
+  .cpe-interface-icon.is-online {
+    @apply bg-success-a10 text-success;
+  }
+  .cpe-interface-status {
+    @apply bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-1 text-[0.6875rem] font-medium;
+  }
+  .cpe-interface-status.is-online {
+    @apply bg-success-a10 text-success;
+  }
+  .cpe-list > div > .cpe-muted {
+    @apply max-w-[45%] text-right break-all;
+  }
+  .cpe-list small {
+    @apply max-w-full truncate tabular-nums;
+  }
+  .cpe-shortcut {
+    @apply hover:border-border hover:bg-panel-bg border-transparent bg-transparent;
+  }
+}
+.cpe-dashboard {
+  .cpe-controls select {
+    @apply border-input bg-panel-bg text-foreground rounded-lg border px-3 py-2 text-sm;
+  }
+  .cpe-chart > svg:focus-visible {
+    @apply outline-ring rounded-md outline-2 outline-offset-2;
+  }
+  .cpe-card {
+    @apply max-md:p-4;
+  }
+  .cpe-summary > div {
+    @apply max-md:p-4;
   }
 }

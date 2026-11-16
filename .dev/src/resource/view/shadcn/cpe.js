@@ -89,6 +89,46 @@ function isp(v) {
     });
   return v || "运营商未知";
 }
+function icon(name) {
+  var paths = {
+    antenna: [
+      "M12 9v13M8 22h8M8 3a7 7 0 0 0 0 10M16 3a7 7 0 0 1 0 10M4 1a11 11 0 0 0 0 14M20 1a11 11 0 0 1 0 14",
+    ],
+    traffic: ["M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4"],
+    link: [
+      "m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0",
+    ],
+    memory: [
+      "M5 5h14v14H5zM9 9h6v6H9zM9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3",
+    ],
+    clock: ["M12 6v6l4 2"],
+    monitor: ["M3 4h18v13H3zM8 21h8m-4-4v4"],
+    phone: ["M7 2h10v20H7zM11 18h2"],
+    network: ["M12 2v20M2 12h20M5 5c5 4 9 4 14 0M5 19c5-4 9-4 14 0"],
+  };
+  var ns = "http://www.w3.org/2000/svg",
+    svg = document.createElementNS(ns, "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("fill", "none");
+  svg.setAttribute("stroke", "currentColor");
+  svg.setAttribute("stroke-width", "1.7");
+  svg.setAttribute("stroke-linecap", "round");
+  svg.setAttribute("stroke-linejoin", "round");
+  svg.setAttribute("aria-hidden", "true");
+  if (name === "clock" || name === "network") {
+    var circle = document.createElementNS(ns, "circle");
+    circle.setAttribute("cx", "12");
+    circle.setAttribute("cy", "12");
+    circle.setAttribute("r", "9");
+    svg.appendChild(circle);
+  }
+  (paths[name] || paths.monitor).forEach(function (d) {
+    var path = document.createElementNS(ns, "path");
+    path.setAttribute("d", d);
+    svg.appendChild(path);
+  });
+  return E("span", { class: "cpe-glyph" }, svg);
+}
 function metric(label, value, note) {
   return E("div", { class: "cpe-metric" }, [
     E("span", { class: "cpe-muted" }, label),
@@ -100,7 +140,9 @@ function card(title, children, cls) {
   return E(
     "section",
     { class: "cpe-card " + (cls || "") },
-    [E("h3", {}, title)].concat(children),
+    [E("div", { class: "cpe-card-heading" }, [E("h3", {}, title)])].concat(
+      children,
+    ),
   );
 }
 function link(label, path) {
@@ -351,7 +393,11 @@ return view.extend({
           mode = c.network_mode || "等待网络信息",
           name = b.name || (section && section.name) || "未发现模组";
         var hero = E("section", { class: "cpe-card cpe-hero" }, [
-          E("div", { class: "cpe-device-icon", "aria-hidden": "true" }, "5G"),
+          E(
+            "div",
+            { class: "cpe-device-icon", "aria-hidden": "true" },
+            icon("antenna"),
+          ),
           E("div", { class: "cpe-device" }, [
             E("h3", {}, name),
             E(
@@ -367,8 +413,10 @@ return view.extend({
             { class: "cpe-status " + (connected ? "is-online" : "") },
             connected ? "● 蜂窝已连接" : "○ 蜂窝未连接",
           ),
-          detail("运营商", isp(s.ISP)),
-          detail("网络模式", mode),
+          E("div", { class: "cpe-hero-meta" }, [
+            detail("运营商", isp(s.ISP)),
+            detail("网络模式", mode),
+          ]),
         ]);
         var speed = card(
           "实时流量",
@@ -427,6 +475,47 @@ return view.extend({
               })
               .join(" "),
           );
+          if (key === "rx" && history.length > 1) {
+            var area = document.createElementNS(ns, "path"),
+              segments = [],
+              segment = [];
+            history.forEach(function (point, index) {
+              if (index && point.time - history[index - 1].time > 30) {
+                segments.push(segment);
+                segment = [];
+              }
+              segment.push({
+                x: ((60 - history.length + index) * 720) / 59,
+                y: 160 - (point.rx / max) * 140,
+              });
+            });
+            if (segment.length) segments.push(segment);
+            area.setAttribute(
+              "d",
+              segments
+                .filter(function (points) {
+                  return points.length > 1;
+                })
+                .map(function (points) {
+                  return (
+                    "M" +
+                    points[0].x +
+                    " 160 " +
+                    points
+                      .map(function (point) {
+                        return "L" + point.x + " " + point.y;
+                      })
+                      .join(" ") +
+                    " L" +
+                    points[points.length - 1].x +
+                    " 160Z"
+                  );
+                })
+                .join(" "),
+            );
+            area.setAttribute("class", "cpe-chart-area");
+            svg.appendChild(area);
+          }
           line.setAttribute("class", "cpe-line " + key);
           svg.appendChild(line);
         });
@@ -508,12 +597,17 @@ return view.extend({
           );
           tooltip.hidden = false;
           var width = chart.getBoundingClientRect().width;
+          var plotRect = svg.getBoundingClientRect(),
+            chartRect = chart.getBoundingClientRect();
           tooltip.style.left =
             Math.max(
               0,
               Math.min(
                 width - tooltip.offsetWidth,
-                (x / 720) * width - tooltip.offsetWidth / 2,
+                plotRect.left -
+                  chartRect.left +
+                  (x / 720) * plotRect.width -
+                  tooltip.offsetWidth / 2,
               ),
             ) + "px";
         }
@@ -547,8 +641,30 @@ return view.extend({
         svg.addEventListener("blur", function () {
           if (svg.isConnected) hideTooltip();
         });
-        chart.append(svg, tooltip);
+        chart.append(
+          E("div", { class: "cpe-chart-axis", "aria-hidden": "true" }, [
+            E("span", {}, ((max * 8) / 1e6).toFixed(1)),
+            E("span", {}, ((max * 4) / 1e6).toFixed(1)),
+            E("span", {}, "0"),
+          ]),
+          svg,
+          tooltip,
+        );
         speed.appendChild(chart);
+        speed.appendChild(
+          E("div", { class: "cpe-time-axis" }, [
+            E(
+              "span",
+              {},
+              history.length
+                ? new Date(history[0].time * 1000).toLocaleTimeString("zh-CN", {
+                    hour12: false,
+                  })
+                : "等待采样",
+            ),
+            E("span", {}, "现在"),
+          ]),
+        );
         speed.appendChild(
           E("div", { class: "cpe-chart-caption" }, [
             E("span", {}, [
@@ -559,35 +675,39 @@ return view.extend({
             E("span", {}, "刻度上限 " + ((max * 8) / 1e6).toFixed(1) + " Mbps"),
           ]),
         );
-        var signals = card("蜂窝信号", [
-          E(
-            "div",
-            { class: "cpe-signal-grid" },
-            ["RSRP", "RSRQ", "SINR"].map(function (k) {
-              var n = parseFloat(c[k]),
-                min = k === "RSRP" ? -140 : k === "RSRQ" ? -20 : -10,
-                max = k === "RSRP" ? -65 : k === "RSRQ" ? -3 : 30;
-              var pct = Number.isFinite(n)
-                ? Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100))
-                : 0;
-              return E("div", {}, [
-                metric(
-                  k,
-                  Number.isFinite(n) ? String(n) : "—",
-                  k === "RSRP" ? "dBm" : "dB",
-                ),
-                E("progress", { max: 100, value: pct, "aria-label": k }),
-              ]);
-            }),
-          ),
-          detail("主载波频段", c.Band ? "n" + c.Band : "—"),
-          detail("聚合载波", c["Band (CA)"] ? "n" + c["Band (CA)"] : "—"),
-          detail(
-            "PCI / ARFCN",
-            [c["Physical Cell ID"], c.ARFCN].filter(Boolean).join(" / "),
-          ),
-          detail("下行带宽", c["DL Bandwidth"]),
-        ]);
+        var signals = card(
+          "蜂窝信号",
+          [
+            E(
+              "div",
+              { class: "cpe-signal-grid" },
+              ["RSRP", "RSRQ", "SINR"].map(function (k) {
+                var n = parseFloat(c[k]),
+                  min = k === "RSRP" ? -140 : k === "RSRQ" ? -20 : -10,
+                  max = k === "RSRP" ? -65 : k === "RSRQ" ? -3 : 30;
+                var pct = Number.isFinite(n)
+                  ? Math.max(0, Math.min(100, ((n - min) / (max - min)) * 100))
+                  : 0;
+                return E("div", {}, [
+                  metric(
+                    k,
+                    Number.isFinite(n) ? String(n) : "—",
+                    k === "RSRP" ? "dBm" : "dB",
+                  ),
+                  E("progress", { max: 100, value: pct, "aria-label": k }),
+                ]);
+              }),
+            ),
+            detail("主载波频段", c.Band ? "n" + c.Band : "—"),
+            detail("聚合载波", c["Band (CA)"] ? "n" + c["Band (CA)"] : "—"),
+            detail(
+              "PCI / ARFCN",
+              [c["Physical Cell ID"], c.ARFCN].filter(Boolean).join(" / "),
+            ),
+            detail("下行带宽", c["DL Bandwidth"]),
+          ],
+          "cpe-signals",
+        );
         var memory = sys.memory || {},
           mem = memory.total
             ? 100 *
@@ -626,6 +746,17 @@ return view.extend({
             "系统持续运行",
           ),
         ]);
+        Array.from(stats.children).forEach(function (item, index) {
+          var label = item.querySelector(".cpe-muted");
+          label.classList.add("cpe-stat-label");
+          label.prepend(
+            E(
+              "span",
+              { class: "cpe-stat-icon" },
+              icon(["traffic", "link", "memory", "clock"][index]),
+            ),
+          );
+        });
         var clients = card("已连接设备", [
           E(
             "div",
@@ -636,7 +767,11 @@ return view.extend({
                     E(
                       "div",
                       { class: "cpe-client-icon", "aria-hidden": "true" },
-                      "↗",
+                      icon(
+                        /iphone|phone|android|手机/i.test(x.hostname || "")
+                          ? "phone"
+                          : "monitor",
+                      ),
                     ),
                     E("div", {}, [
                       E("strong", {}, x.hostname || "未命名设备"),
@@ -666,9 +801,14 @@ return view.extend({
               })
               .map(function (n) {
                 return E("div", { class: "cpe-interface" }, [
-                  E("span", {
-                    class: "cpe-dot " + (n.isUp() ? "is-online" : ""),
-                  }),
+                  E(
+                    "span",
+                    {
+                      class:
+                        "cpe-interface-icon " + (n.isUp() ? "is-online" : ""),
+                    },
+                    icon("network"),
+                  ),
                   E("div", {}, [
                     E("strong", {}, n.getName()),
                     E(
@@ -679,13 +819,44 @@ return view.extend({
                   ]),
                   E(
                     "span",
-                    { class: "cpe-muted" },
+                    {
+                      class:
+                        "cpe-interface-status " + (n.isUp() ? "is-online" : ""),
+                    },
                     n.isUp() ? "已连接" : "未连接",
                   ),
                 ]);
               }),
           ),
         ]);
+        clients
+          .querySelector("h3")
+          .appendChild(
+            E(
+              "span",
+              { class: "cpe-count" },
+              connectedDevices ? String(connectedDevices.length) : "—",
+            ),
+          );
+        clients
+          .querySelector(".cpe-card-heading")
+          .appendChild(
+            E(
+              "a",
+              { href: L.url("admin", "network", "dhcp"), class: "cpe-manage" },
+              "管理 ↗",
+            ),
+          );
+        interfaces.querySelector(".cpe-card-heading").appendChild(
+          E(
+            "a",
+            {
+              href: L.url("admin", "network", "network"),
+              class: "cpe-manage",
+            },
+            "管理 ↗",
+          ),
+        );
         live.replaceChildren(
           hero,
           E("div", { class: "cpe-main-grid" }, [speed, signals]),
