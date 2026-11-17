@@ -13,7 +13,8 @@
     (admin/network/firewall) or opkg (admin/system/opkg) never hit this map
     and were removed as dead entries. */
 const ICON_MAP = {
-  cpe: "radio-tower",
+  cpe: "layout-dashboard",
+  modem: "radio-tower",
   status: "activity",
   system: "settings",
   network: "network",
