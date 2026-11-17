@@ -1,3 +1,5 @@
+> 本分支的正式定制主题为 **Shadcn_Shane**，安装和构建方式见 [Shadcn_Shane 说明](SHADCN_SHANE.md)。
+
 <h4 align="right"><a href="README.md">English</a> | <strong>简体中文</strong></h4>
 <p align="center">
     <img src="https://raw.githubusercontent.com/eamonxg/assets/master/shadcn/logo/logo-lockup.png" width="360" alt="Shadcn LuCI Theme"/>

@@ -1,0 +1,23 @@
+diff --git a/runtime/router.js b/runtime/router.js
+index 1b0a31280cf08ca61d9a23677b51fba934b3f7b6..e756aae793b6adafa9b8354c809e6e8918c07168 100644
+--- a/runtime/router.js
++++ b/runtime/router.js
+@@ -853,7 +853,17 @@ return baseclass.extend({
+       return;
+ 
+     const r = this.route(ev.destination.url);
+-    if (!r || this.expired || this.poisoned()) return;
++    if (!r || this.expired || this.poisoned()) {
++      // A traversal to an entry created by intercept() is same-document.
++      // Simply declining it restores only the URL, leaving the old view visible.
++      // Apps may inject global sheets after entry, making an SPA swap unsafe.
++      if (ev.navigationType === "traverse" && ev.destination.sameDocument) {
++        ev.intercept({ handler: () => {
++          if (!ev.signal.aborted) window.location.reload();
++        } });
++      }
++      return;
++    }
+ 
+     // The departing entry's inner-scroller offset (currentEntry still names
+     // it during dispatch); put back on traversal, top on push, in commit().

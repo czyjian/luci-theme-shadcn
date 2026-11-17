@@ -645,3 +645,18 @@ already 0-byte cache hits.
      set of enabled node-css links and the live-region text against the full
      load, and reports which pages carry sheets that are not the theme's.
 - Run the unit tests with `pnpm test` from `.dev/`.
+
+## Fork patch: history traversal after app-injected styles
+
+This fork applies a pnpm patch to `@eamonxg/luci-theme-devkit@0.3.2`
+(`.dev/patches/@eamonxg__luci-theme-devkit@0.3.2.patch`). When an app such as
+QModem injects a global stylesheet, `poisoned()` correctly prevents another SPA
+swap. However, declining a same-document history traversal only restores the
+URL, leaving the outgoing view on screen. For unsafe same-document traversals,
+the router now intercepts and reloads after the destination entry is committed.
+The history position is preserved; ordinary link navigation and cross-document
+traversal remain native. Cancelled traversals do not reload newer navigation.
+
+`router-traversal.test.js` covers unsafe/expired/unresolved routes, cancellation,
+native navigation and the safe SPA path. A local browser regression fixture also
+reproduced the old URL/content mismatch and verified back/forward with the patch.

@@ -17,7 +17,7 @@
         "qmodem.traffic": ["current", "get"],
         "file": ["read", "exec"]
       },
-      "uci": ["qmodem", "network", "wireless", "luci"],
+      "uci": ["qmodem", "network", "wireless", "luci", "firewall"],
       "file": {
         "/proc/sys/net/netfilter/nf_conntrack_count": ["read"],
         "/sbin/ip -j neigh show": ["exec"]

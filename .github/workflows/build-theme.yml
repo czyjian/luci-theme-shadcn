@@ -1,4 +1,4 @@
-name: luci-theme-shadcn Build & Release
+name: Shadcn_Shane Build & Release
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   build:
-    name: build luci-theme-shadcn ${{ matrix.sdk }}
+    name: build Shadcn_Shane ${{ matrix.sdk }}
     runs-on: ubuntu-latest
     if: >-
       github.event_name == 'workflow_dispatch' ||
@@ -30,18 +30,23 @@ jobs:
           fetch-depth: 0
       - id: slug
         run: echo "ref=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Stage Shadcn_Shane package
+        run: node scripts/stage-shane.mjs
       - id: build
         uses: eamonxg/build-luci-package@v2
         with:
           sdk: ${{ matrix.sdk }}
-          packages: '[{"pkg":"luci-theme-shadcn","path":"."}]'
+          packages: '[{"pkg":"luci-theme-shadcn-shane","path":"dist/luci-theme-shadcn-shane"}]'
       - uses: actions/upload-artifact@v6
         with:
-          name: luci-theme-shadcn-${{ steps.slug.outputs.ref }}-${{ steps.build.outputs.pkg_type }}
+          name: luci-theme-shadcn-shane-${{ steps.slug.outputs.ref }}-${{ steps.build.outputs.pkg_type }}
           path: out/*.[ai]pk
       - uses: eamonxg/build-luci-package/release@v2
         with:
-          name: luci-theme-shadcn
+          name: luci-theme-shadcn-shane
           files: out/*.[ai]pk
           body_repo: eamonxg/assets
           body_path: shadcn/docs/changelog/${{ github.ref_name }}.md

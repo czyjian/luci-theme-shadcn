@@ -34,6 +34,30 @@
   .cpe-device {
     @apply mr-auto;
   }
+  .cpe-identity {
+    @apply mr-auto min-w-0;
+  }
+  .cpe-sensor-row {
+    @apply mt-auto grid shrink-0 grid-cols-2 gap-6;
+  }
+  .cpe-signals {
+    @apply flex flex-col;
+  }
+  .cpe-signals > :not(.cpe-sensor-row) {
+    @apply shrink-0;
+  }
+  .cpe-signals > .cpe-detail:has(+ .cpe-sensor-row) {
+    @apply border-border border-b;
+  }
+  .cpe-identity-row {
+    @apply flex items-center gap-5;
+  }
+  .cpe-description {
+    @apply mt-3 mb-0 text-sm;
+  }
+  .cpe-hero .cpe-controls {
+    @apply flex-col items-end gap-2 max-md:flex-row max-md:items-center;
+  }
   .cpe-device-icon {
     @apply bg-primary flex h-14 w-14 items-center justify-center rounded-xl text-lg font-bold text-white shadow-md;
   }
@@ -283,8 +307,11 @@ body:has(.cpe-dashboard) .content-card {
   .cpe-interface-icon {
     @apply bg-muted text-muted-foreground inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
   }
-  .cpe-interface-icon.is-online {
+  .cpe-interface-icon.is-wan {
     @apply bg-success-a10 text-success;
+  }
+  .cpe-interface-icon.is-lan {
+    @apply bg-info-a10 text-info;
   }
   .cpe-interface-status {
     @apply bg-muted text-muted-foreground shrink-0 rounded-full px-2 py-1 text-[0.6875rem] font-medium;

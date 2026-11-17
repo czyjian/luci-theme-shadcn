@@ -81,6 +81,21 @@ function fields(data) {
   });
   return out;
 }
+function bandwidth(data, direction) {
+  var key = direction + " Bandwidth";
+  return (
+    ((data || {}).modem_info || [])
+      .filter(function (item) {
+        return item.key === key || item.key === key + " (CA)";
+      })
+      .map(function (item) {
+        var value = String(item.value || "").trim();
+        return /\d/.test(value) ? value : "";
+      })
+      .filter(Boolean)
+      .join("+") || "—"
+  );
+}
 function isp(v) {
   v = (v || "").trim();
   if (/^(?:[0-9a-f]{4})+$/i.test(v))
@@ -160,9 +175,20 @@ function detail(label, value) {
 }
 return view.extend({
   load: function () {
-    return Promise.all([safe(uci.load("qmodem")), safe(board())]);
+    return Promise.all([
+      safe(uci.load("qmodem")),
+      safe(board()),
+      safe(uci.load("firewall")),
+    ]);
   },
   render: function (data) {
+    var interfaceRoles = {};
+    uci.sections("firewall", "zone").forEach(function (zone) {
+      var role = zone.name === "wan" ? "wan" : zone.name === "lan" ? "lan" : "";
+      L.toArray(zone.network).forEach(function (name) {
+        if (role) interfaceRoles[name] = role;
+      });
+    });
     var self = this,
       modems = uci.sections("qmodem", "modem-device").filter(function (s) {
         return s.state !== "disabled" && s.at_port;
@@ -199,7 +225,8 @@ return view.extend({
             L.env.media +
             "/cpe.css?v=" +
             encodeURIComponent(
-              document.body.dataset.assetVersion || "2026111605",
+              (document.body.dataset.assetVersion || "2026111605") +
+                "-hero-layout-1",
             ),
         }),
       ]),
@@ -226,15 +253,6 @@ return view.extend({
       generation++;
       refresh();
     });
-    root.appendChild(
-      E("div", { class: "cpe-heading" }, [
-        E("div", {}, [
-          E("h2", {}, "面板"),
-          E("p", { class: "cpe-muted" }, "连接、信号与流量，一目了然。"),
-        ]),
-        E("div", { class: "cpe-controls" }, [stamp, select]),
-      ]),
-    );
     root.appendChild(live);
     function refresh() {
       var id = selected,
@@ -393,20 +411,25 @@ return view.extend({
           mode = c.network_mode || "等待网络信息",
           name = b.name || (section && section.name) || "未发现模组";
         var hero = E("section", { class: "cpe-card cpe-hero" }, [
-          E(
-            "div",
-            { class: "cpe-device-icon", "aria-hidden": "true" },
-            icon("antenna"),
-          ),
-          E("div", { class: "cpe-device" }, [
-            E("h3", {}, name),
-            E(
-              "span",
-              { class: "cpe-muted" },
-              (data[1] || {}).hostname +
-                " · " +
-                ((data[1] || {}).release || {}).distribution,
-            ),
+          E("div", { class: "cpe-identity" }, [
+            E("div", { class: "cpe-identity-row" }, [
+              E(
+                "div",
+                { class: "cpe-device-icon", "aria-hidden": "true" },
+                icon("antenna"),
+              ),
+              E("div", { class: "cpe-device" }, [
+                E("h3", {}, name),
+                E(
+                  "span",
+                  { class: "cpe-muted" },
+                  (data[1] || {}).hostname +
+                    " · " +
+                    ((data[1] || {}).release || {}).distribution +
+                    " · 连接、信号与流量，一目了然。",
+                ),
+              ]),
+            ]),
           ]),
           E(
             "span",
@@ -417,6 +440,7 @@ return view.extend({
             detail("运营商", isp(s.ISP)),
             detail("网络模式", mode),
           ]),
+          E("div", { class: "cpe-controls" }, [stamp, select]),
         ]);
         var speed = card(
           "实时流量",
@@ -698,13 +722,24 @@ return view.extend({
                 ]);
               }),
             ),
-            detail("主载波频段", c.Band ? "n" + c.Band : "—"),
-            detail("聚合载波", c["Band (CA)"] ? "n" + c["Band (CA)"] : "—"),
+            detail(
+              "主载波频段 / 聚合载波",
+              (c.Band ? "n" + c.Band : "—") +
+                " / " +
+                (c["Band (CA)"] ? "n" + c["Band (CA)"] : "—"),
+            ),
             detail(
               "PCI / ARFCN",
               [c["Physical Cell ID"], c.ARFCN].filter(Boolean).join(" / "),
             ),
-            detail("下行带宽", c["DL Bandwidth"]),
+            detail(
+              "下行带宽 / 上行带宽",
+              bandwidth(r[5], "DL") + " / " + bandwidth(r[5], "UL"),
+            ),
+            E("div", { class: "cpe-sensor-row" }, [
+              detail("温度", b.temperature),
+              detail("电压", b.voltage),
+            ]),
           ],
           "cpe-signals",
         );
@@ -800,12 +835,18 @@ return view.extend({
                 return n.getName() !== "loopback";
               })
               .map(function (n) {
+                var role = interfaceRoles[n.getName()] || "";
                 return E("div", { class: "cpe-interface" }, [
                   E(
                     "span",
                     {
-                      class:
-                        "cpe-interface-icon " + (n.isUp() ? "is-online" : ""),
+                      class: "cpe-interface-icon " + (role ? "is-" + role : ""),
+                      title:
+                        role === "wan"
+                          ? "外网接口"
+                          : role === "lan"
+                            ? "内网接口"
+                            : "其他接口",
                     },
                     icon("network"),
                   ),
