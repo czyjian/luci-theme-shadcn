@@ -102,6 +102,25 @@ function isp(v) {
     v = v.replace(/.{4}/g, function (x) {
       return String.fromCharCode(parseInt(x, 16));
     });
+  var names = [
+    [
+      "中国电信",
+      "China Telecom",
+      ["chinatelecom", "中国电信", "ctcc", "chnct"],
+    ],
+    ["中国移动", "China Mobile", ["chinamobile", "中国移动", "cmcc"]],
+    [
+      "中国联通",
+      "China Unicom",
+      ["chinaunicom", "中国联通", "cucc", "chn-unicom"],
+    ],
+    ["中国广电", "China Broadnet", ["chinabroadnet", "中国广电", "cbn"]],
+  ];
+  var key = v.toLowerCase().replace(/\s+/g, "");
+  for (var i = 0; i < names.length; i++) {
+    if (names[i][2].indexOf(key) !== -1)
+      return names[i][0] + "（" + names[i][1] + "）";
+  }
   return v || "运营商未知";
 }
 function icon(name) {
