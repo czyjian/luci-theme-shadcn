@@ -14,10 +14,10 @@
     @apply mt-2 text-sm;
   }
   .cpe-eyebrow {
-    @apply text-primary mb-2 text-[0.9375rem] font-medium tracking-widest;
+    @apply text-primary mb-2 text-[0.890625rem] font-medium tracking-widest;
   }
   .cpe-controls {
-    @apply flex items-center gap-3 text-[0.9375rem] max-md:w-full max-md:justify-between;
+    @apply flex items-center gap-3 text-[0.890625rem] max-md:w-full max-md:justify-between;
   }
   .cpe-card {
     @apply border-border bg-panel-bg mb-4 min-w-0 rounded-2xl border p-6 shadow-sm;
@@ -62,7 +62,7 @@
     @apply bg-primary flex h-14 w-14 items-center justify-center rounded-xl text-lg font-bold text-white shadow-md;
   }
   .cpe-status {
-    @apply bg-muted text-muted-foreground rounded-full px-3 py-1 text-[0.9375rem];
+    @apply bg-muted text-muted-foreground rounded-full px-3 py-1 text-[0.890625rem];
   }
   .cpe-status.is-online {
     @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400;
@@ -80,13 +80,13 @@
     @apply flex min-w-0 flex-col gap-2;
   }
   .cpe-metric > span {
-    @apply text-[0.9375rem];
+    @apply text-[0.890625rem];
   }
   .cpe-metric strong {
     @apply text-2xl font-semibold tracking-tight tabular-nums max-md:text-xl;
   }
   .cpe-metric small {
-    @apply text-[0.9375rem];
+    @apply text-[0.890625rem];
   }
   .cpe-speeds .cpe-metric:first-child strong {
     @apply text-[#0072b2] dark:text-[#56b4e9];
@@ -126,7 +126,7 @@
     @apply stroke-[#b45309] [stroke-dasharray:6_4] dark:stroke-[#e69f00];
   }
   .cpe-chart-caption {
-    @apply text-muted-foreground mt-3 flex justify-between gap-2 text-[0.9375rem];
+    @apply text-muted-foreground mt-3 flex justify-between gap-2 text-[0.890625rem];
   }
   .cpe-signal-grid {
     @apply mb-5 grid grid-cols-3 gap-3;
@@ -144,7 +144,7 @@
     @apply bg-primary rounded-full;
   }
   .cpe-detail {
-    @apply flex justify-between gap-4 py-2 text-[0.9375rem];
+    @apply flex justify-between gap-4 py-2 text-[0.890625rem];
   }
   .cpe-detail strong {
     @apply text-right font-medium;
@@ -173,10 +173,10 @@
     @apply block truncate text-sm font-medium;
   }
   .cpe-list small {
-    @apply mt-1 block text-[0.9375rem];
+    @apply mt-1 block text-[0.890625rem];
   }
   .cpe-list > div > span {
-    @apply text-[0.9375rem];
+    @apply text-[0.890625rem];
   }
   .cpe-client-icon {
     @apply bg-primary-a10 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-full;
@@ -191,7 +191,7 @@
     @apply flex flex-wrap justify-center gap-3 pb-3;
   }
   .cpe-shortcut {
-    @apply border-border bg-panel-bg text-muted-foreground hover:text-foreground rounded-full border px-4 py-2 text-[0.9375rem] no-underline;
+    @apply border-border bg-panel-bg text-muted-foreground hover:text-foreground rounded-full border px-4 py-2 text-[0.890625rem] no-underline;
   }
 }
 body:has(.cpe-dashboard) .content-card {
@@ -203,7 +203,7 @@ body:has(.cpe-dashboard) .content-card {
     @apply relative pl-12;
   }
   .cpe-chart-tooltip {
-    @apply bg-panel-bg text-foreground border-border pointer-events-none absolute top-2 z-10 w-52 rounded-lg border p-3 text-[0.9375rem] tabular-nums shadow-lg;
+    @apply bg-panel-bg text-foreground border-border pointer-events-none absolute top-2 z-10 w-52 rounded-lg border p-3 text-[0.890625rem] tabular-nums shadow-lg;
   }
   .cpe-chart-tooltip strong {
     @apply mb-2 block font-medium;
@@ -299,10 +299,10 @@ body:has(.cpe-dashboard) .content-card {
     @apply bg-warning-a10 text-warning;
   }
   .cpe-count {
-    @apply text-muted-foreground ml-2 text-[0.9375rem] font-normal tabular-nums;
+    @apply text-muted-foreground ml-2 text-[0.890625rem] font-normal tabular-nums;
   }
   .cpe-manage {
-    @apply text-primary shrink-0 text-[0.9375rem] no-underline hover:underline;
+    @apply text-primary shrink-0 text-[0.890625rem] no-underline hover:underline;
   }
   .cpe-interface-icon {
     @apply bg-muted text-muted-foreground inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
