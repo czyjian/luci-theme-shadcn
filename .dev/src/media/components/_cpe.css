@@ -170,7 +170,7 @@
     @apply mr-auto min-w-0;
   }
   .cpe-list strong {
-    @apply block truncate text-sm font-medium;
+    @apply block truncate text-[0.91875rem] font-medium;
   }
   .cpe-list small {
     @apply mt-1 block text-[0.890625rem];
