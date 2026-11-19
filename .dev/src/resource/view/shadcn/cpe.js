@@ -428,7 +428,9 @@ return view.extend({
         }
         var connected = b.connect_status === "Yes",
           mode = c.network_mode || "等待网络信息",
-          name = b.name || (section && section.name) || "未发现模组";
+          name = String(
+            b.name || (section && section.name) || "未发现模组",
+          ).toUpperCase();
         var hero = E("section", { class: "cpe-card cpe-hero" }, [
           E("div", { class: "cpe-identity" }, [
             E("div", { class: "cpe-identity-row" }, [
