@@ -504,63 +504,87 @@ return view.extend({
             })
             .concat([125000]),
         );
+        // Split at missing samples so neither the line nor the fill bridges a gap.
+        var segments = [];
+        history.forEach(function (point, index) {
+          if (!index || point.time - history[index - 1].time > 30)
+            segments.push([]);
+          segments[segments.length - 1].push({
+            x: ((60 - history.length + index) * 720) / 59,
+            rx: 160 - (point.rx / max) * 140,
+            tx: 160 - (point.tx / max) * 140,
+          });
+        });
+
+        function curve(points, key) {
+          var steps = points.slice(1).map(function (point, i) {
+            return point[key] - points[i][key];
+          });
+          // Harmonic-mean tangents keep each curve between its samples.
+          var slopes = points.map(function (_, i) {
+            if (!i) return steps[0];
+            if (i === steps.length) return steps[i - 1];
+            var before = steps[i - 1],
+              after = steps[i];
+            return before * after > 0
+              ? (2 * before * after) / (before + after)
+              : 0;
+          });
+          return points
+            .slice(1)
+            .map(function (point, i) {
+              var start = points[i],
+                dx = (point.x - start.x) / 3;
+              return (
+                "C" +
+                [
+                  start.x + dx,
+                  start[key] + slopes[i] / 3,
+                  point.x - dx,
+                  point[key] - slopes[i + 1] / 3,
+                  point.x,
+                  point[key],
+                ]
+                  .map(function (n) {
+                    return n.toFixed(1);
+                  })
+                  .join(" ")
+              );
+            })
+            .join(" ");
+        }
+
         ["rx", "tx"].forEach(function (key) {
-          if (history.length < 2) return;
-          var line = document.createElementNS(ns, "path");
-          line.setAttribute(
-            "d",
-            history
-              .map(function (p, i) {
-                return (
-                  (i && p.time - history[i - 1].time <= 30 ? "L" : "M") +
-                  (((60 - history.length + i) * 720) / 59).toFixed(1) +
-                  " " +
-                  (160 - (p[key] / max) * 140).toFixed(1)
-                );
-              })
-              .join(" "),
-          );
-          if (key === "rx" && history.length > 1) {
-            var area = document.createElementNS(ns, "path"),
-              segments = [],
-              segment = [];
-            history.forEach(function (point, index) {
-              if (index && point.time - history[index - 1].time > 30) {
-                segments.push(segment);
-                segment = [];
-              }
-              segment.push({
-                x: ((60 - history.length + index) * 720) / 59,
-                y: 160 - (point.rx / max) * 140,
-              });
-            });
-            if (segment.length) segments.push(segment);
-            area.setAttribute(
-              "d",
-              segments
-                .filter(function (points) {
-                  return points.length > 1;
-                })
-                .map(function (points) {
-                  return (
-                    "M" +
-                    points[0].x +
-                    " 160 " +
-                    points
-                      .map(function (point) {
-                        return "L" + point.x + " " + point.y;
-                      })
-                      .join(" ") +
-                    " L" +
-                    points[points.length - 1].x +
-                    " 160Z"
-                  );
-                })
-                .join(" "),
-            );
+          var lines = [],
+            fills = [];
+          segments.forEach(function (points) {
+            var first = points[0],
+              last = points[points.length - 1];
+            var start = first.x.toFixed(1) + " " + first[key].toFixed(1);
+            var path = curve(points, key);
+            lines.push("M" + start + path);
+            if (points.length > 1)
+              fills.push(
+                "M" +
+                  first.x.toFixed(1) +
+                  " 160L" +
+                  start +
+                  path +
+                  "L" +
+                  last.x.toFixed(1) +
+                  " 160Z",
+              );
+          });
+          if (key === "rx" && fills.length) {
+            var area = document.createElementNS(ns, "path");
+            area.setAttribute("d", fills.join(" "));
             area.setAttribute("class", "cpe-chart-area");
             svg.appendChild(area);
           }
+          var line = document.createElementNS(ns, "path");
+          line.setAttribute("d", lines.join(" "));
+          line.setAttribute("stroke-linecap", "round");
+          line.setAttribute("stroke-linejoin", "round");
           line.setAttribute("class", "cpe-line " + key);
           svg.appendChild(line);
         });
