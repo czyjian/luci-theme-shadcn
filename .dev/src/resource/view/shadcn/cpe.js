@@ -81,44 +81,157 @@ function fields(data) {
   });
   return out;
 }
-function bandwidth(data, direction) {
-  var key = direction + " Bandwidth";
-  return (
-    ((data || {}).modem_info || [])
+function carrierValues(data, key) {
+  var items = (data || {}).modem_info || [];
+  function values(name) {
+    return items
       .filter(function (item) {
-        return item.key === key || item.key === key + " (CA)";
+        return item.key === name;
       })
-      .map(function (item) {
-        var value = String(item.value || "").trim();
-        return /\d/.test(value) ? value : "";
+      .flatMap(function (item) {
+        return String(item.value == null ? "" : item.value)
+          .split(/\s*[/+]\s*/)
+          .map(function (value) {
+            return { value: value.trim(), extra: item.extra_info || "" };
+          })
+          .filter(function (part) {
+            return /\d/.test(part.value);
+          });
+      });
+  }
+  var primary = values(key);
+  // Some modems already include all carriers in the base field.
+  return primary.length > 1 ? primary : primary.concat(values(key + " (CA)"));
+}
+function bandwidth(data, direction) {
+  return (
+    carrierValues(data, direction + " Bandwidth")
+      .map(function (part) {
+        return part.value;
       })
-      .filter(Boolean)
       .join("+") || "—"
   );
 }
-function isp(v) {
-  v = (v || "").trim();
-  if (/^(?:[0-9a-f]{4})+$/i.test(v))
+function bands(data) {
+  var mode = fields(data).network_mode || "";
+  return (
+    carrierValues(data, "Band")
+      .map(function (part) {
+        if (/^[nBb]\d/.test(part.value)) return part.value;
+        var rat = part.extra || mode;
+        return (
+          (/NR|5G/i.test(rat) ? "n" : /LTE|4G/i.test(rat) ? "B" : "") +
+          part.value
+        );
+      })
+      .join(" / ") || "—"
+  );
+}
+function carrierIds(data, key) {
+  return (
+    carrierValues(data, key)
+      .map(function (part) {
+        return part.value;
+      })
+      .join(" + ") || "—"
+  );
+}
+function isp(v, mcc, mnc) {
+  v = String(v || "")
+    .trim()
+    .replace(/^["']|["']$/g, "");
+  if (/^(?:[0-9a-f]{4}){2,}$/i.test(v))
     v = v.replace(/.{4}/g, function (x) {
       return String.fromCharCode(parseInt(x, 16));
     });
+  v = v.replace(/\0/g, "").trim();
+  if (!v || /^[?\s-]+$/.test(v)) {
+    var country = String(mcc || "").trim(),
+      network = String(mnc || "").trim();
+    if (/^\d{3}$/.test(country) && /^\d{1,3}$/.test(network))
+      v = country + network.padStart(2, "0");
+  }
   var names = [
     [
       "中国电信",
       "China Telecom",
-      ["chinatelecom", "中国电信", "ctcc", "chnct"],
+      [
+        "chinatelecom",
+        "中国电信",
+        "中国电信通信",
+        "ctcc",
+        "ct",
+        "chnct",
+        "chnctcc",
+        "chntelecom",
+        "46003",
+        "46005",
+        "46011",
+        "46059",
+      ],
     ],
-    ["中国移动", "China Mobile", ["chinamobile", "中国移动", "cmcc"]],
+    [
+      "中国移动",
+      "China Mobile",
+      [
+        "chinamobile",
+        "中国移动",
+        "中国移动通信",
+        "cmcc",
+        "chncmcc",
+        "chnmobile",
+        "46000",
+        "46002",
+        "46004",
+        "46007",
+        "46008",
+        "46013",
+      ],
+    ],
     [
       "中国联通",
       "China Unicom",
-      ["chinaunicom", "中国联通", "cucc", "chn-unicom"],
+      [
+        "chinaunicom",
+        "中国联通",
+        "中国联合网络通信",
+        "cucc",
+        "unicom",
+        "chnunicom",
+        "chncucc",
+        "46001",
+        "46006",
+        "46009",
+      ],
     ],
-    ["中国广电", "China Broadnet", ["chinabroadnet", "中国广电", "cbn"]],
+    [
+      "中国广电",
+      "China Broadnet",
+      [
+        "chinabroadnet",
+        "chinabroadcastingnetwork",
+        "中国广电",
+        "中国广播电视网络",
+        "cbn",
+        "chncbn",
+        "46015",
+      ],
+    ],
+    [
+      "中国铁通",
+      "China Tietong",
+      ["chinatietong", "中国铁通", "tietong", "crtc", "46020"],
+    ],
   ];
-  var key = v.toLowerCase().replace(/\s+/g, "");
+  var key = v
+    .toLowerCase()
+    .replace(/[\s_\-().（）]/g, "")
+    .replace(/(?:[2345]g|lte|nr)+$/g, "");
   for (var i = 0; i < names.length; i++) {
-    if (names[i][2].indexOf(key) !== -1)
+    if (
+      names[i][2].indexOf(key) !== -1 ||
+      key === (names[i][0] + names[i][1]).toLowerCase().replace(/\s+/g, "")
+    )
       return names[i][0] + "（" + names[i][1] + "）";
   }
   return v || "运营商未知";
@@ -458,7 +571,7 @@ return view.extend({
             connected ? "● 蜂窝已连接" : "○ 蜂窝未连接",
           ),
           E("div", { class: "cpe-hero-meta" }, [
-            detail("运营商", isp(s.ISP)),
+            detail("运营商", isp(s.ISP, c.MCC, c.MNC)),
             detail("网络模式", mode),
           ]),
           E("div", { class: "cpe-controls" }, [stamp, select]),
@@ -767,15 +880,12 @@ return view.extend({
                 ]);
               }),
             ),
-            detail(
-              "主载波频段 / 聚合载波",
-              (c.Band ? "n" + c.Band : "—") +
-                " / " +
-                (c["Band (CA)"] ? "n" + c["Band (CA)"] : "—"),
-            ),
+            detail("主载波频段 / 聚合载波", bands(r[5])),
             detail(
               "PCI / ARFCN",
-              [c["Physical Cell ID"], c.ARFCN].filter(Boolean).join(" / "),
+              carrierIds(r[5], "Physical Cell ID") +
+                " / " +
+                carrierIds(r[5], "ARFCN"),
             ),
             detail(
               "下行带宽 / 上行带宽",
