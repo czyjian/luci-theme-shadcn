@@ -960,7 +960,7 @@ return view.extend({
             E(
               "div",
               { class: "alert-message warning" },
-              "未发现启用的 QModem 模组，请先完成模组配置。",
+              "未检测到可用的模组，请检查模组配置。",
             ),
           );
         if (!r[4] && id)
