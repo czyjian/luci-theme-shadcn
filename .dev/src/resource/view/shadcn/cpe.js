@@ -952,7 +952,6 @@ return view.extend({
             link("模组管理", "admin/modem/qmodem/overview"),
             link("流量统计", "admin/modem/qmodem/traffic"),
             link("短信", "admin/modem/qmodem/sms"),
-            link("网络设置", "admin/network/network"),
           ]),
         );
         if (chartHover != null) showSample(chartHover);
