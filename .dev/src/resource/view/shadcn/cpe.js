@@ -882,10 +882,10 @@ return view.extend({
             ),
             detail("主载波频段 / 聚合载波", bands(r[5])),
             detail(
-              "PCI / ARFCN",
+              c.EARFCN && !c.ARFCN ? "PCI / EARFCN" : "PCI / ARFCN",
               carrierIds(r[5], "Physical Cell ID") +
                 " / " +
-                carrierIds(r[5], "ARFCN"),
+                carrierIds(r[5], c.ARFCN ? "ARFCN" : "EARFCN"),
             ),
             detail(
               "下行带宽 / 上行带宽",
