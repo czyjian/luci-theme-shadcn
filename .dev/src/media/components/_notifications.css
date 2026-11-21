@@ -16,6 +16,7 @@
   @apply pointer-events-none fixed top-15 right-6 z-40 w-96 max-w-[calc(100vw-2rem)] max-md:top-13 max-md:right-4;
 
   &:not([data-open]) {
+    .shadcn-notification-clear-all,
     .shadcn-notification-heading,
     .shadcn-notification-empty,
     .shadcn-notification-unread,
@@ -36,6 +37,10 @@
     @apply text-primary hover:bg-primary-a10 focus-visible:outline-ring disabled:text-muted-foreground cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-xs font-medium focus-visible:outline-2 disabled:pointer-events-none;
   }
 
+  .shadcn-notification-clear-all {
+    @apply text-primary hover:bg-primary-a10 disabled:text-muted-foreground border-border w-full cursor-pointer border-0 border-t bg-transparent px-4 py-3 text-sm disabled:pointer-events-none;
+  }
+
   .shadcn-notification-unread {
     @apply bg-primary-a15 text-primary mb-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium;
   }
@@ -49,33 +54,22 @@
   }
 
   .alert-message {
-    @apply bg-panel-bg pointer-events-auto mb-2 min-w-0 gap-3 rounded-xl px-4 py-3 [overflow-wrap:anywhere] shadow-md;
+    @apply bg-panel-bg! pointer-events-auto mb-2 flex min-w-0 items-center justify-between gap-3 rounded-xl bg-[linear-gradient(var(--info-a10),var(--info-a10))] px-4 py-3 [overflow-wrap:anywhere] shadow-md;
 
     > :first-child {
-      @apply min-w-0;
+      @apply flex min-w-0 flex-1! flex-col items-start;
     }
-  }
-
-  &[data-open] .alert-message {
-    @apply bg-muted m-2 shadow-none;
 
     > :last-child > button.btn {
       @apply border-foreground-a30 bg-foreground/15 text-foreground hover:bg-foreground/25;
     }
 
-    &.success {
-      @apply bg-success-a10;
+    > :last-child {
+      @apply mt-0 ml-auto flex! flex-none! justify-end text-right;
     }
-    &.info {
-      @apply bg-info-a10;
-    }
-    &.warning,
-    &.notice {
-      @apply bg-warning-a10;
-    }
-    &.error,
-    &.danger {
-      @apply bg-destructive-a10;
-    }
+  }
+
+  &[data-open] .alert-message {
+    @apply bg-panel-bg! m-2 bg-[linear-gradient(var(--info-a10),var(--info-a10))] shadow-none;
   }
 }
