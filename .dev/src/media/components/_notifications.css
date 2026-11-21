@@ -18,6 +18,7 @@
   &:not([data-open]) {
     .shadcn-notification-heading,
     .shadcn-notification-empty,
+    .shadcn-notification-unread,
     .alert-message:not([data-recent]) {
       @apply hidden!;
     }
@@ -28,7 +29,15 @@
   }
 
   .shadcn-notification-heading {
-    @apply border-border border-b px-4 py-3 text-sm font-semibold;
+    @apply border-border flex items-center justify-between gap-3 border-b px-4 py-3 text-sm font-semibold;
+  }
+
+  .shadcn-notification-read-all {
+    @apply text-primary hover:bg-primary-a10 focus-visible:outline-ring disabled:text-muted-foreground cursor-pointer rounded-md border-0 bg-transparent px-2 py-1 text-xs font-medium focus-visible:outline-2 disabled:pointer-events-none;
+  }
+
+  .shadcn-notification-unread {
+    @apply bg-primary-a15 text-primary mb-1 inline-flex rounded-full px-2 py-0.5 text-xs font-medium;
   }
 
   .shadcn-notification-list {
@@ -48,6 +57,25 @@
   }
 
   &[data-open] .alert-message {
-    @apply m-2 shadow-none;
+    @apply bg-muted m-2 shadow-none;
+
+    > :last-child > button.btn {
+      @apply border-foreground-a30 bg-foreground/15 text-foreground hover:bg-foreground/25;
+    }
+
+    &.success {
+      @apply bg-success-a10;
+    }
+    &.info {
+      @apply bg-info-a10;
+    }
+    &.warning,
+    &.notice {
+      @apply bg-warning-a10;
+    }
+    &.error,
+    &.danger {
+      @apply bg-destructive-a10;
+    }
   }
 }

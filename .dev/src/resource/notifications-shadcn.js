@@ -10,7 +10,15 @@ return baseclass.extend({
     const title = chinese ? "通知" : _("Notifications");
     toggle.setAttribute("aria-label", title);
 
-    const heading = E("div", { class: "shadcn-notification-heading" }, title);
+    const markAll = E(
+      "button",
+      { type: "button", class: "shadcn-notification-read-all", disabled: "" },
+      chinese ? "全部已读" : _("Mark all as read"),
+    );
+    const heading = E("div", { class: "shadcn-notification-heading" }, [
+      E("span", {}, title),
+      markAll,
+    ]);
     const empty = E(
       "p",
       { class: "shadcn-notification-empty" },
@@ -25,12 +33,34 @@ return baseclass.extend({
     document.body.appendChild(panel);
     toggle.hidden = false;
 
+    function syncUnread() {
+      const pending = !!list.querySelector("[data-unread]");
+      toggle.toggleAttribute("data-pending", pending);
+      toggle.setAttribute(
+        "aria-label",
+        pending
+          ? chinese
+            ? "通知（有未读消息）"
+            : _("Notifications (unread)")
+          : title,
+      );
+      markAll.disabled = !pending;
+    }
+
+    markAll.addEventListener("click", () => {
+      list.querySelectorAll("[data-unread]").forEach((msg) => {
+        msg.removeAttribute("data-unread");
+        msg.querySelector(".shadcn-notification-unread")?.remove();
+      });
+      toggle.focus();
+      syncUnread();
+    });
+
     function showHistory(open) {
       panel.toggleAttribute("data-open", open);
       toggle.setAttribute("aria-expanded", String(open));
       if (open) {
-        toggle.removeAttribute("data-pending");
-        // Close the history without replaying messages already seen there.
+        // Close the history without replaying old previews.
         list
           .querySelectorAll("[data-recent]")
           .forEach((msg) => msg.removeAttribute("data-recent"));
@@ -55,10 +85,19 @@ return baseclass.extend({
       // original node preserves action buttons, dismissal and LuCI's timers.
       if (!node.matches?.(".alert-message.fade-in") || node.parentNode !== main)
         return;
+      node.setAttribute("data-unread", "");
+      node.firstElementChild?.prepend(
+        E(
+          "span",
+          { class: "shadcn-notification-unread" },
+          chinese ? "未读" : _("Unread"),
+        ),
+      );
       if (!panel.hasAttribute("data-open")) {
-        toggle.setAttribute("data-pending", "");
         node.setAttribute("data-recent", "");
       }
+      const dismiss = node.querySelector(":scope > div:last-child > button");
+      if (dismiss) dismiss.textContent = chinese ? "清除" : _("Clear");
       list.prepend(node);
       function hidePreview() {
         if (!node.isConnected) return;
@@ -76,7 +115,7 @@ return baseclass.extend({
     }).observe(main, { childList: true });
     new MutationObserver(() => {
       empty.hidden = !!list.childElementCount;
-      if (empty.hidden === false) toggle.removeAttribute("data-pending");
+      syncUnread();
     }).observe(list, { childList: true });
     Array.from(main.children).reverse().forEach(collect);
   },
