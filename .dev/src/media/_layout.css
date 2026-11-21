@@ -164,10 +164,10 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-sub-link {
-  @apply text-sidebar-muted block rounded-md px-2 py-1.5 text-sm no-underline [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted block rounded-md px-2 py-1.5 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
-    @apply bg-sidebar-accent text-sidebar-accent-fg;
+    @apply bg-sidebar-accent text-sidebar-accent-fg no-underline;
   }
 }
 
@@ -186,10 +186,10 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-collapsed-popover-link {
-  @apply text-sidebar-muted mx-1 block rounded-sm px-2 py-1.5 text-sm no-underline [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted mx-1 block rounded-sm px-2 py-1.5 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
-    @apply bg-sidebar-accent text-sidebar-accent-fg;
+    @apply bg-sidebar-accent text-sidebar-accent-fg no-underline;
   }
 
   &.active {
@@ -205,10 +205,10 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-logout {
-  @apply text-sidebar-muted flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm no-underline [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
-    @apply bg-sidebar-accent text-sidebar-accent-fg;
+    @apply bg-sidebar-accent text-sidebar-accent-fg no-underline;
   }
 
   &.active {
