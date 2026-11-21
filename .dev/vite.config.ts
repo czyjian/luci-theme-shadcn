@@ -206,6 +206,10 @@ export default defineConfig(({ mode, command }) => {
         input: {
           main: resolve(CURRENT_DIR, "src/media/main.css"),
           cpe: resolve(CURRENT_DIR, "src/media/components/_cpe.css"),
+          notifications: resolve(
+            CURRENT_DIR,
+            "src/media/components/_notifications.css",
+          ),
           login: resolve(CURRENT_DIR, "src/media/login.css"),
           // On-demand third-party patches: one entry per page, output to
           // shadcn/patches/<page>.css (the `patches/` key prefix lands them there

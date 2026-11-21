@@ -65,6 +65,7 @@
 		<link rel="stylesheet" href="{{ media }}/login.css">
 		{% else %}
 		<link rel="stylesheet" href="{{ media }}/main.css" data-luci-shell>
+		<link rel="stylesheet" href="{{ media }}/notifications.css?v={# PKG_VERSION #}" data-luci-shell>
 		{% for (let patch in patch_files): %}
 		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css" data-luci-patch="{{ patch }}">
 		{% endfor %}
@@ -208,6 +209,10 @@
 							<kbd class="cmdk-trigger-key">{{ match(http.getenv('HTTP_USER_AGENT') ?? '', /Mac|iP(ad|hone|od)/) ? '⌘K' : 'Ctrl+K' }}</kbd>
 						</button>
 						<div id="indicators" class="topbar-indicators"></div>
+						<button id="notification-toggle" class="topbar-icon-btn" type="button" hidden
+							aria-label="{{ _('Notifications') }}" aria-expanded="false" aria-controls="notification-panel">
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 20a2 2 0 0 0 4 0M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/></svg>
+						</button>
 						<button
 							id="theme-toggle-btn"
 							class="topbar-icon-btn"

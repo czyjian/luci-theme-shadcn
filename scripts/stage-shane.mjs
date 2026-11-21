@@ -11,6 +11,7 @@ const content = (s) =>
     .replaceAll("themes/shadcn", "themes/shadcn-shane")
     .replaceAll("shadcn/cpe", "shadcn-shane/cpe")
     .replaceAll("menu-shadcn", "menu-shadcn-shane")
+    .replaceAll("notifications-shadcn", "notifications-shadcn-shane")
     .replaceAll("sidebar-shadcn", "sidebar-shadcn-shane")
     .replaceAll("router-shadcn", "router-shadcn-shane")
     .replaceAll("luci-theme-shadcn-cpe", "luci-theme-shadcn-shane-cpe")

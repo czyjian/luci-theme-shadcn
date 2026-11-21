@@ -1,0 +1,53 @@
+@reference "../main.css";
+
+#notification-toggle {
+  @apply relative;
+
+  &[hidden] {
+    @apply hidden;
+  }
+
+  &[data-pending]::after {
+    @apply bg-primary absolute top-1 right-1 size-2 rounded-full content-[''];
+  }
+}
+
+#notification-panel {
+  @apply pointer-events-none fixed top-15 right-6 z-40 w-96 max-w-[calc(100vw-2rem)] max-md:top-13 max-md:right-4;
+
+  &:not([data-open]) {
+    .shadcn-notification-heading,
+    .shadcn-notification-empty,
+    .alert-message:not([data-recent]) {
+      @apply hidden!;
+    }
+  }
+
+  &[data-open] {
+    @apply border-border bg-panel-bg pointer-events-auto overflow-hidden rounded-xl border shadow-lg;
+  }
+
+  .shadcn-notification-heading {
+    @apply border-border border-b px-4 py-3 text-sm font-semibold;
+  }
+
+  .shadcn-notification-list {
+    @apply max-h-[min(50vh,28rem)] overflow-y-auto;
+  }
+
+  .shadcn-notification-empty {
+    @apply text-muted-foreground p-4 text-sm;
+  }
+
+  .alert-message {
+    @apply bg-panel-bg pointer-events-auto mb-2 min-w-0 gap-3 rounded-xl px-4 py-3 [overflow-wrap:anywhere] shadow-md;
+
+    > :first-child {
+      @apply min-w-0;
+    }
+  }
+
+  &[data-open] .alert-message {
+    @apply m-2 shadow-none;
+  }
+}

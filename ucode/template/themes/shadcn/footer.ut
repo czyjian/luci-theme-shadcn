@@ -16,6 +16,7 @@
         window.ShadcnSidebar = m;
       });
       L.require('menu-shadcn');
+      L.require('notifications-shadcn');
       if (window.navigation) L.require('router-shadcn');
     </script>
     {% endif %}
