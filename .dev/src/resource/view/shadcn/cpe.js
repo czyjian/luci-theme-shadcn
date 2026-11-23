@@ -243,7 +243,15 @@ var listSms = rpc.declare({
   reject: true,
 });
 
+var markSmsRead = rpc.declare({
+  object: "qmodem.sms",
+  method: "mark_read",
+  params: ["modem_id", "id"],
+  reject: true,
+});
+
 function smsPreview() {
+  var marking = new Set();
   var modemId = null,
     requestedAt = 0,
     pending = false,
@@ -336,6 +344,29 @@ function smsPreview() {
     );
     dialog.showModal();
     thread.scrollTop = thread.scrollHeight;
+    var activeWrites = marking;
+    var id = modemId;
+    messages.forEach(function (message) {
+      if (
+        message.type !== "received" ||
+        message.sender !== sender ||
+        message.is_read !== false ||
+        !message.id ||
+        activeWrites.has(message.id)
+      )
+        return;
+      pending = false;
+      activeWrites.add(message.id);
+      safe(markSmsRead(id, message.id)).then(function (result) {
+        activeWrites.delete(message.id);
+        if (marking !== activeWrites || !preview.isConnected) return;
+        if (result && result.status === "success") message.is_read = true;
+        if (!activeWrites.size) {
+          requestedAt = 0;
+          render();
+        }
+      });
+    });
   }
 
   var state = "正在读取短信…";
@@ -381,7 +412,7 @@ function smsPreview() {
         var sender = message.sender;
         var unread = unreadBySender.get(sender) || 0;
         var heading = [E("strong", {}, sender)];
-        if (unreadTotal)
+        if (unread)
           heading.push(
             E("span", { class: "cpe-sms-unread" }, "未读 " + unread),
           );
@@ -413,13 +444,15 @@ function smsPreview() {
         modemId = id;
         requestedAt = 0;
         pending = false;
+        marking = new Set();
         visible = false;
         messages = [];
         state = id ? "正在读取短信…" : "未检测到可用模组";
         if (dialog.open) dialog.close();
         render();
       }
-      if (!id || pending || Date.now() - requestedAt < 15000) return;
+      if (!id || pending || marking.size || Date.now() - requestedAt < 15000)
+        return;
       requestedAt = Date.now();
       var request = safe(listSms(id, 100, 0));
       pending = request;
