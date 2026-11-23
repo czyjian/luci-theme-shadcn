@@ -243,6 +243,13 @@ var listSms = rpc.declare({
   reject: true,
 });
 
+var syncSms = rpc.declare({
+  object: "qmodem.sms",
+  method: "sync",
+  params: ["modem_id"],
+  reject: true,
+});
+
 var markSmsRead = rpc.declare({
   object: "qmodem.sms",
   method: "mark_read",
@@ -252,8 +259,8 @@ var markSmsRead = rpc.declare({
 
 function smsPreview() {
   var marking = new Set();
+  var smsMode;
   var modemId = null,
-    requestedAt = 0,
     pending = false,
     visible = false,
     messages = [];
@@ -362,7 +369,6 @@ function smsPreview() {
         if (marking !== activeWrites || !preview.isConnected) return;
         if (result && result.status === "success") message.is_read = true;
         if (!activeWrites.size) {
-          requestedAt = 0;
           render();
         }
       });
@@ -442,7 +448,7 @@ function smsPreview() {
     refresh: function (id) {
       if (id !== modemId) {
         modemId = id;
-        requestedAt = 0;
+        smsMode = undefined;
         pending = false;
         marking = new Set();
         visible = false;
@@ -451,14 +457,24 @@ function smsPreview() {
         if (dialog.open) dialog.close();
         render();
       }
-      if (!id || pending || marking.size || Date.now() - requestedAt < 15000)
+      if (
+        !id ||
+        pending ||
+        marking.size ||
+        document.hidden ||
+        !preview.isConnected
+      )
         return;
-      requestedAt = Date.now();
-      var request = safe(listSms(id, 100, 0));
+      var request = (
+        smsMode === "database_poll" ? safe(syncSms(id)) : Promise.resolve()
+      ).then(function () {
+        return safe(listSms(id, 100, 0));
+      });
       pending = request;
       request.then(function (result) {
         if (pending !== request || !preview.isConnected) return;
         pending = false;
+        if (result && result.mode) smsMode = result.mode;
         var next =
           result && Array.isArray(result.messages) ? result.messages : [];
         var nextState =
