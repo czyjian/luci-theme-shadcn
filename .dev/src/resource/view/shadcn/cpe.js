@@ -496,14 +496,8 @@ function smsPreview() {
     }
   });
 
-  function openConversation(sender) {
-    activeSender = sender;
-    title.textContent = sender;
-    replyInput.value = "";
-    replyStatus.textContent = "";
-    renderThread(sender, true);
-    dialog.showModal();
-    thread.scrollTop = thread.scrollHeight;
+  function markConversationRead(sender) {
+    if (!sender || !modemId || document.hidden || !preview.isConnected) return;
     var activeWrites = marking;
     var id = modemId;
     messages.forEach(function (message) {
@@ -526,6 +520,17 @@ function smsPreview() {
         }
       });
     });
+  }
+
+  function openConversation(sender) {
+    activeSender = sender;
+    title.textContent = sender;
+    replyInput.value = "";
+    replyStatus.textContent = "";
+    renderThread(sender, true);
+    dialog.showModal();
+    thread.scrollTop = thread.scrollHeight;
+    markConversationRead(sender);
   }
 
   var state = "正在读取短信…";
@@ -642,6 +647,7 @@ function smsPreview() {
         render();
         if (dialog.open && activeSender) {
           renderThread(activeSender);
+          markConversationRead(activeSender);
         }
       });
     },
@@ -654,7 +660,8 @@ function icon(name) {
     ],
     traffic: ["M7 3v18m-4-4 4 4 4-4M17 21V3m-4 4 4-4 4 4"],
     link: [
-      "m10 13 4-4M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0M16 8l1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0",
+      "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
+      "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
     ],
     memory: [
       "M5 5h14v14H5zM9 9h6v6H9zM9 2v3m6-3v3M9 19v3m6-3v3M2 9h3m-3 6h3m14-6h3m-3 6h3",
