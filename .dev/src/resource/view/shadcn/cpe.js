@@ -511,6 +511,8 @@ function icon(name) {
   var ns = "http://www.w3.org/2000/svg",
     svg = document.createElementNS(ns, "svg");
   svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("width", "18");
+  svg.setAttribute("height", "18");
   svg.setAttribute("fill", "none");
   svg.setAttribute("stroke", "currentColor");
   svg.setAttribute("stroke-width", "1.7");
@@ -560,12 +562,49 @@ function detail(label, value) {
     E("strong", {}, value || "—"),
   ]);
 }
+var cpeCssState = null;
+function ensureCpeCss() {
+  if (typeof document === "undefined" || !document.head)
+    return Promise.resolve();
+  var href =
+    L.env.media +
+    "/cpe.css?v=" +
+    encodeURIComponent(
+      ((document.body && document.body.dataset.assetVersion) || "2026111605") +
+        "-hero-layout-1",
+    );
+  var existing = document.querySelector('link[data-cpe-css="1"]');
+  if (existing && existing.sheet) return Promise.resolve();
+  if (cpeCssState && cpeCssState.href === href) return cpeCssState.promise;
+  var linkEl =
+    existing ||
+    E("link", {
+      rel: "stylesheet",
+      href: href,
+      "data-cpe-css": "1",
+    });
+  var promise = new Promise(function (resolve) {
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      resolve();
+    }
+    linkEl.addEventListener("load", finish, { once: true });
+    linkEl.addEventListener("error", finish, { once: true });
+    if (!existing) document.head.appendChild(linkEl);
+    if (linkEl.sheet) finish();
+  });
+  cpeCssState = { href: href, promise: promise };
+  return promise;
+}
 return view.extend({
   load: function () {
     return Promise.all([
       safe(uci.load("qmodem")),
       safe(board()),
       safe(uci.load("firewall")),
+      safe(ensureCpeCss()),
     ]);
   },
   render: function (data) {
@@ -605,18 +644,8 @@ return view.extend({
         };
       return modemCache.promise;
     }
-    var root = E("div", { class: "cpe-dashboard" }, [
-        E("link", {
-          rel: "stylesheet",
-          href:
-            L.env.media +
-            "/cpe.css?v=" +
-            encodeURIComponent(
-              (document.body.dataset.assetVersion || "2026111605") +
-                "-hero-layout-1",
-            ),
-        }),
-      ]),
+    ensureCpeCss();
+    var root = E("div", { class: "cpe-dashboard" }),
       live = E("div"),
       stamp = E("span", { class: "cpe-muted" }, "正在读取设备…");
     var select = E(
