@@ -567,7 +567,7 @@ function smsPreview() {
     var incoming = Array.from(latestBySender.values()).slice(0, 5);
     if (!incoming.length) {
       list.replaceChildren(
-        E("p", { class: "cpe-muted" }, state || "暂无接收短信"),
+        E("p", { class: "cpe-muted cpe-sms-empty" }, state || "暂无接收到的短信"),
       );
       return;
     }
@@ -1331,7 +1331,12 @@ return view.extend({
                 ]);
               }),
             ),
-            detail("主载波频段 / 聚合载波", bands(r[5])),
+            detail(
+              carrierValues(r[5], "Band").length > 1
+                ? "主载波频段 / 聚合载波"
+                : "频段",
+              bands(r[5]),
+            ),
             detail(
               c.EARFCN && !c.ARFCN ? "PCI / EARFCN" : "PCI / ARFCN",
               carrierIds(r[5], "Physical Cell ID") +

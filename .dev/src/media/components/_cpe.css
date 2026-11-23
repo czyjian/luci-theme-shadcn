@@ -161,17 +161,23 @@
   .cpe-bottom-grid {
     @apply grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(19rem,1fr)] gap-4 max-lg:grid-cols-1;
   }
+  .cpe-sms {
+    @apply flex flex-col;
+  }
   .cpe-sms-list {
-    @apply max-h-64 overflow-y-auto;
+    @apply flex max-h-64 flex-1 flex-col overflow-y-auto;
 
     button {
-      @apply border-border hover:bg-muted focus-visible:outline-ring block w-full cursor-pointer rounded-none border-0 border-b bg-transparent px-2 py-2.5 text-left text-sm last:border-b-0 focus-visible:-outline-offset-2;
+      @apply border-border hover:bg-muted focus-visible:outline-ring block w-full shrink-0 cursor-pointer rounded-none border-0 border-b bg-transparent px-2 py-2.5 text-left text-sm last:border-b-0 focus-visible:-outline-offset-2;
     }
 
     strong,
     span {
       @apply block truncate;
     }
+  }
+  .cpe-sms-empty {
+    @apply m-auto py-8 text-center;
   }
   .cpe-sms-row-heading {
     @apply flex items-center justify-between gap-2;
