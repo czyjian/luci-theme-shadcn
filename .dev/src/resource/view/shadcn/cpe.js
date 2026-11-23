@@ -236,6 +236,212 @@ function isp(v, mcc, mnc) {
   }
   return v || "运营商未知";
 }
+var listSms = rpc.declare({
+  object: "qmodem.sms",
+  method: "list",
+  params: ["modem_id", "limit", "offset"],
+  reject: true,
+});
+
+function smsPreview() {
+  var modemId = null,
+    requestedAt = 0,
+    pending = false,
+    visible = false,
+    messages = [];
+  var preview = card("短信预览", [], "cpe-sms");
+  var unreadBadge = E("span", {
+    class: "cpe-sms-unread",
+    "aria-live": "polite",
+    hidden: "",
+  });
+  preview.querySelector("h3").appendChild(unreadBadge);
+  var title = E("h3", { id: "cpe-sms-dialog-title" });
+  var thread = E("div", { class: "cpe-sms-thread" });
+  var dialog = E(
+    "dialog",
+    {
+      class: "cpe-sms-dialog",
+      "aria-labelledby": "cpe-sms-dialog-title",
+    },
+    [
+      E("header", {}, [
+        title,
+        E(
+          "button",
+          {
+            type: "button",
+            class: "btn",
+            click: function () {
+              dialog.close();
+            },
+          },
+          "关闭",
+        ),
+      ]),
+      thread,
+    ],
+  );
+  dialog.addEventListener("close", function () {
+    if (!dialog.open) thread.replaceChildren();
+  });
+  var list = E("div", { class: "cpe-sms-list" });
+  var eye = E("img", { width: 16, height: 16, alt: "" });
+  var toggle = E(
+    "button",
+    {
+      type: "button",
+      class: "topbar-icon-btn",
+      click: function () {
+        visible = !visible;
+        render();
+      },
+    },
+    eye,
+  );
+  preview.querySelector(".cpe-card-heading").appendChild(toggle);
+  preview.appendChild(list);
+
+  function address(message) {
+    return message.type === "sent"
+      ? message.conversation_contact || message.recipient
+      : message.sender;
+  }
+
+  function openConversation(sender) {
+    title.textContent = sender;
+    thread.replaceChildren(
+      ...messages
+        .filter(function (message) {
+          return address(message) === sender;
+        })
+        .reverse()
+        .map(function (message) {
+          return E(
+            "div",
+            {
+              class:
+                "cpe-sms-bubble" + (message.type === "sent" ? " is-sent" : ""),
+            },
+            [
+              E(
+                "small",
+                { class: "cpe-muted" },
+                message.type === "sent" ? "已发送" : "已接收",
+              ),
+              E("div", {}, String(message.content || "")),
+            ],
+          );
+        }),
+    );
+    dialog.showModal();
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  var state = "正在读取短信…";
+  function render() {
+    var label = visible ? "隐藏短信内容" : "显示短信内容";
+    toggle.setAttribute("aria-label", label);
+    toggle.setAttribute("aria-pressed", String(visible));
+    toggle.title = label;
+    eye.src = L.env.media + "/icons/" + (visible ? "eye.svg" : "eye-off.svg");
+    var latestBySender = new Map();
+    var unreadBySender = new Map();
+    var unreadTotal = 0;
+    messages.forEach(function (message) {
+      if (
+        message.type === "received" &&
+        message.sender &&
+        !latestBySender.has(message.sender)
+      )
+        latestBySender.set(message.sender, message);
+      if (
+        message.type === "received" &&
+        message.sender &&
+        message.is_read === false
+      ) {
+        unreadBySender.set(
+          message.sender,
+          (unreadBySender.get(message.sender) || 0) + 1,
+        );
+        unreadTotal++;
+      }
+    });
+    unreadBadge.hidden = !!state;
+    unreadBadge.textContent = unreadTotal ? "未读 " + unreadTotal : "全部已读";
+    var incoming = Array.from(latestBySender.values()).slice(0, 5);
+    if (!incoming.length) {
+      list.replaceChildren(
+        E("p", { class: "cpe-muted" }, state || "暂无接收短信"),
+      );
+      return;
+    }
+    list.replaceChildren(
+      ...incoming.map(function (message) {
+        var sender = message.sender;
+        var unread = unreadBySender.get(sender) || 0;
+        var heading = [E("strong", {}, sender)];
+        if (unreadTotal)
+          heading.push(
+            E("span", { class: "cpe-sms-unread" }, "未读 " + unread),
+          );
+        var details = [E("div", { class: "cpe-sms-row-heading" }, heading)];
+        if (visible)
+          details.push(
+            E("span", { class: "cpe-muted" }, String(message.content || "")),
+          );
+        return E(
+          "button",
+          {
+            type: "button",
+            click: function () {
+              openConversation(sender);
+            },
+          },
+          details,
+        );
+      }),
+    );
+  }
+
+  render();
+  return {
+    card: preview,
+    dialog: dialog,
+    refresh: function (id) {
+      if (id !== modemId) {
+        modemId = id;
+        requestedAt = 0;
+        pending = false;
+        visible = false;
+        messages = [];
+        state = id ? "正在读取短信…" : "未检测到可用模组";
+        if (dialog.open) dialog.close();
+        render();
+      }
+      if (!id || pending || Date.now() - requestedAt < 15000) return;
+      requestedAt = Date.now();
+      var request = safe(listSms(id, 100, 0));
+      pending = request;
+      request.then(function (result) {
+        if (pending !== request || !preview.isConnected) return;
+        pending = false;
+        var next =
+          result && Array.isArray(result.messages) ? result.messages : [];
+        var nextState =
+          result && Array.isArray(result.messages) ? "" : "暂时无法读取短信";
+        if (
+          nextState === state &&
+          JSON.stringify(next) === JSON.stringify(messages)
+        )
+          return;
+        messages = next;
+        state = nextState;
+        render();
+      });
+    },
+  };
+}
 function icon(name) {
   var paths = {
     antenna: [
@@ -385,10 +591,28 @@ return view.extend({
       generation++;
       refresh();
     });
-    root.appendChild(live);
+    var sms = smsPreview();
+    var clientsCard = E("div"),
+      interfacesCard = E("div");
+    var lowerGrid = E("div", { class: "cpe-bottom-grid" }, [
+      clientsCard,
+      sms.card,
+      interfacesCard,
+    ]);
+    root.append(
+      live,
+      lowerGrid,
+      E("nav", { class: "cpe-shortcuts", "aria-label": "CPE 快捷入口" }, [
+        link("模组管理", "admin/modem/qmodem/overview"),
+        link("流量统计", "admin/modem/qmodem/traffic"),
+        link("短信", "admin/modem/qmodem/sms"),
+      ]),
+      sms.dialog,
+    );
     function refresh() {
       var id = selected,
         ticket = generation;
+      sms.refresh(id);
       return Promise.all([
         safe(info()),
         safe(devices()),
@@ -1057,13 +1281,11 @@ return view.extend({
           hero,
           E("div", { class: "cpe-main-grid" }, [speed, signals]),
           stats,
-          E("div", { class: "cpe-bottom-grid" }, [clients, interfaces]),
-          E("nav", { class: "cpe-shortcuts", "aria-label": "CPE 快捷入口" }, [
-            link("模组管理", "admin/modem/qmodem/overview"),
-            link("流量统计", "admin/modem/qmodem/traffic"),
-            link("短信", "admin/modem/qmodem/sms"),
-          ]),
         );
+        clientsCard.replaceWith(clients);
+        interfacesCard.replaceWith(interfaces);
+        clientsCard = clients;
+        interfacesCard = interfaces;
         if (chartHover != null) showSample(chartHover);
         if (!modems.length)
           live.prepend(

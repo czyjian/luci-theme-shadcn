@@ -159,7 +159,56 @@
     @apply border-border bg-panel-bg rounded-2xl border p-6 shadow-sm;
   }
   .cpe-bottom-grid {
-    @apply grid grid-cols-[minmax(0,2fr)_minmax(19rem,1fr)] gap-4 max-lg:grid-cols-1;
+    @apply grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(19rem,1fr)] gap-4 max-lg:grid-cols-1;
+  }
+  .cpe-sms-list {
+    @apply max-h-64 overflow-y-auto;
+
+    button {
+      @apply border-border hover:bg-muted focus-visible:outline-ring block w-full cursor-pointer rounded-md border-0 border-b bg-transparent px-2 py-2.5 text-left text-sm last:border-b-0 focus-visible:-outline-offset-2;
+    }
+
+    strong,
+    span {
+      @apply block truncate;
+    }
+  }
+  .cpe-sms-row-heading {
+    @apply flex items-center justify-between gap-2;
+  }
+  .cpe-sms-unread {
+    @apply bg-primary-a15 text-primary inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-xs font-medium;
+    &[hidden] {
+      @apply hidden;
+    }
+  }
+  .cpe-sms h3 > .cpe-sms-unread {
+    @apply ml-2 align-middle;
+  }
+  .cpe-sms-dialog {
+    @apply border-border bg-panel-bg text-foreground fixed inset-0 m-auto w-[min(49.92rem,calc(100vw-2rem))] rounded-xl border p-0 shadow-lg;
+
+    &::backdrop {
+      @apply bg-black/40;
+    }
+
+    header {
+      @apply border-border flex items-center justify-between gap-3 border-b px-4 py-3;
+    }
+
+    h3 {
+      @apply m-0 break-all;
+    }
+  }
+  .cpe-sms-thread {
+    @apply flex max-h-[65vh] flex-col gap-3 overflow-y-auto p-4;
+  }
+  .cpe-sms-bubble {
+    @apply bg-muted max-w-[90%] self-start rounded-xl px-3 py-2 [overflow-wrap:anywhere] whitespace-pre-wrap;
+
+    &.is-sent {
+      @apply bg-primary-a10 self-end;
+    }
   }
   .cpe-client,
   .cpe-interface {
