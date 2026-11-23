@@ -165,7 +165,7 @@
     @apply max-h-64 overflow-y-auto;
 
     button {
-      @apply border-border hover:bg-muted focus-visible:outline-ring block w-full cursor-pointer rounded-md border-0 border-b bg-transparent px-2 py-2.5 text-left text-sm last:border-b-0 focus-visible:-outline-offset-2;
+      @apply border-border hover:bg-muted focus-visible:outline-ring block w-full cursor-pointer rounded-none border-0 border-b bg-transparent px-2 py-2.5 text-left text-sm last:border-b-0 focus-visible:-outline-offset-2;
     }
 
     strong,

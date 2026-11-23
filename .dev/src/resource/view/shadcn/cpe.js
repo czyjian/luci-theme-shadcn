@@ -658,28 +658,14 @@ return view.extend({
       ]),
       sms.dialog,
     );
-    function refresh() {
-      var id = selected,
-        ticket = generation;
-      sms.refresh(id);
-      return Promise.all([
-        safe(info()),
-        safe(devices()),
-        safe(leases(4)),
-        safe(network.getNetworks()),
-        readModem(id),
-        id ? safe(current(id)) : null,
-        safe(fs.read("/proc/sys/net/netfilter/nf_conntrack_count")),
-        safe(fs.exec("/sbin/ip", ["-j", "neigh", "show"])),
-      ]).then(function (r) {
-        if (ticket !== generation || !root.isConnected) return;
-        var countText = String(r[6] == null ? "" : r[6]).trim();
-        var connectionCount = /^\d+$/.test(countText)
-          ? Number(countText)
-          : null;
-        var neighborResult = r[7];
-        var modemData = r[4];
-        var snapshot = modemData[3];
+    function paint(r, id, loaded) {
+      var countText = String(r[6] == null ? "" : r[6]).trim();
+      var connectionCount = /^\d+$/.test(countText)
+        ? Number(countText)
+        : null;
+      var neighborResult = r[7];
+      var modemData = r[4] || [null, null, null, null];
+      var snapshot = modemData[3];
         if (
           snapshot &&
           snapshot.config &&
@@ -1344,7 +1330,7 @@ return view.extend({
               "未检测到可用的模组，请检查模组配置。",
             ),
           );
-        if (!r[4] && id)
+        if (loaded && !r[4] && id)
           live.prepend(
             E(
               "div",
@@ -1352,10 +1338,34 @@ return view.extend({
               "暂时无法读取蜂窝信息，请检查 QModem 服务和访问权限。",
             ),
           );
-        stamp.textContent =
-          "更新于 " + new Date().toLocaleTimeString("zh-CN", { hour12: false });
+        if (loaded) {
+          stamp.textContent =
+            "更新于 " + new Date().toLocaleTimeString("zh-CN", { hour12: false });
+          sms.refresh(id);
+        }
+    }
+    function refresh() {
+      var id = selected,
+        ticket = generation;
+      return Promise.all([
+        safe(info()),
+        safe(devices()),
+        safe(leases(4)),
+        safe(network.getNetworks()),
+        readModem(id),
+        id ? safe(current(id)) : null,
+        safe(fs.read("/proc/sys/net/netfilter/nf_conntrack_count")),
+        safe(fs.exec("/sbin/ip", ["-j", "neigh", "show"])),
+      ]).then(function (r) {
+        if (ticket !== generation || !root.isConnected) return;
+        paint(r, id, true);
       });
     }
+    paint(
+      [null, null, null, null, [null, null, null, null], null, null, null],
+      selected,
+      false,
+    );
     window.setTimeout(function () {
       refresh();
     }, 0);
