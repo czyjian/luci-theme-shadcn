@@ -257,11 +257,26 @@ var markSmsRead = rpc.declare({
   reject: true,
 });
 
+var sendSms = rpc.declare({
+  object: "qmodem.sms",
+  method: "send",
+  params: [
+    "modem_id",
+    "recipient",
+    "content",
+    "conversation_contact",
+    "country_code",
+  ],
+  reject: true,
+});
+
 function smsPreview() {
   var marking = new Set();
   var smsMode;
   var modemId = null,
+    activeSender = null,
     pending = false,
+    sending = false,
     visible = false,
     messages = [];
   var preview = card("短信预览", [], "cpe-sms");
@@ -273,6 +288,24 @@ function smsPreview() {
   preview.querySelector("h3").appendChild(unreadBadge);
   var title = E("h3", { id: "cpe-sms-dialog-title" });
   var thread = E("div", { class: "cpe-sms-thread" });
+  var replyInput = E("textarea", {
+    rows: "2",
+    placeholder: "输入回复内容…（Ctrl+Enter 发送）",
+    "aria-label": "快速回复内容",
+  });
+  var replyStatus = E("span", {
+    class: "cpe-muted",
+    "aria-live": "polite",
+  });
+  var replyButton = E(
+    "button",
+    { type: "submit", class: "btn cbi-button-action" },
+    "发送",
+  );
+  var replyForm = E("form", { class: "cpe-sms-reply" }, [
+    replyInput,
+    E("div", { class: "cpe-sms-reply-actions" }, [replyStatus, replyButton]),
+  ]);
   var dialog = E(
     "dialog",
     {
@@ -295,10 +328,16 @@ function smsPreview() {
         ),
       ]),
       thread,
+      replyForm,
     ],
   );
   dialog.addEventListener("close", function () {
-    if (!dialog.open) thread.replaceChildren();
+    if (!dialog.open) {
+      activeSender = null;
+      replyInput.value = "";
+      replyStatus.textContent = "";
+      thread.replaceChildren();
+    }
   });
   var list = E("div", { class: "cpe-sms-list" });
   var eye = E("img", { width: 16, height: 16, alt: "" });
@@ -323,8 +362,44 @@ function smsPreview() {
       : message.sender;
   }
 
-  function openConversation(sender) {
-    title.textContent = sender;
+  function formatSmsTime(message) {
+    var raw =
+      message.type === "received" &&
+      message.received_at != null &&
+      message.received_at !== ""
+        ? message.received_at
+        : message.timestamp;
+    if (raw == null || raw === "") return "";
+    var date;
+    if (typeof raw === "number") {
+      date = new Date(raw > 1e12 ? raw : raw * 1000);
+    } else {
+      var text = String(raw).trim();
+      if (/^\d+$/.test(text)) {
+        var num = Number(text);
+        date = new Date(num > 1e12 ? num : num * 1000);
+      } else if (/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}(?::\d{2})?$/.test(text)) {
+        date = new Date(text.replace(" ", "T") + "Z");
+      } else {
+        date = new Date(text);
+      }
+    }
+    if (!date || Number.isNaN(date.getTime())) return "";
+    return (
+      String(date.getMonth() + 1).padStart(2, "0") +
+      "/" +
+      String(date.getDate()).padStart(2, "0") +
+      " " +
+      String(date.getHours()).padStart(2, "0") +
+      ":" +
+      String(date.getMinutes()).padStart(2, "0")
+    );
+  }
+
+  function renderThread(sender, scrollBottom) {
+    var atBottom =
+      scrollBottom ||
+      thread.scrollHeight - thread.clientHeight - thread.scrollTop <= 24;
     thread.replaceChildren(
       ...messages
         .filter(function (message) {
@@ -332,6 +407,8 @@ function smsPreview() {
         })
         .reverse()
         .map(function (message) {
+          var label = message.type === "sent" ? "已发送" : "已接收";
+          var time = formatSmsTime(message);
           return E(
             "div",
             {
@@ -342,13 +419,89 @@ function smsPreview() {
               E(
                 "small",
                 { class: "cpe-muted" },
-                message.type === "sent" ? "已发送" : "已接收",
+                time ? label + " · " + time : label,
               ),
               E("div", {}, String(message.content || "")),
             ],
           );
         }),
     );
+    if (atBottom) thread.scrollTop = thread.scrollHeight;
+  }
+
+  function submitReply() {
+    if (sending) return;
+    var content = replyInput.value.trim();
+    var targetSender = activeSender;
+    var targetModem = modemId;
+    if (!content) {
+      replyStatus.textContent = "请输入回复内容";
+      replyInput.focus();
+      return;
+    }
+    if (!targetSender || !targetModem) return;
+    sending = true;
+    replyInput.disabled = true;
+    replyButton.disabled = true;
+    replyButton.textContent = "发送中…";
+    replyStatus.textContent = "正在发送…";
+    sendSms(targetModem, targetSender, content, targetSender, "")
+      .then(function (result) {
+        if (!result || result.status !== "success") {
+          throw new Error(
+            (result && (result.error || result.message)) || "发送失败",
+          );
+        }
+        pending = false;
+        if (modemId === targetModem) {
+          messages.unshift({
+            type: "sent",
+            recipient: targetSender,
+            conversation_contact: targetSender,
+            content: content,
+            timestamp: Math.floor(Date.now() / 1000),
+          });
+          render();
+        }
+        if (dialog.open && activeSender === targetSender) {
+          replyInput.value = "";
+          replyStatus.textContent = "已发送";
+          renderThread(targetSender, true);
+        }
+      })
+      .catch(function (err) {
+        if (dialog.open && activeSender === targetSender) {
+          replyStatus.textContent =
+            "发送失败：" + ((err && err.message) || "未知错误");
+        }
+      })
+      .finally(function () {
+        sending = false;
+        replyInput.disabled = false;
+        replyButton.disabled = false;
+        replyButton.textContent = "发送";
+        if (dialog.open && activeSender === targetSender && !replyInput.value)
+          replyInput.focus();
+      });
+  }
+
+  replyForm.addEventListener("submit", function (event) {
+    event.preventDefault();
+    submitReply();
+  });
+  replyInput.addEventListener("keydown", function (event) {
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+      event.preventDefault();
+      submitReply();
+    }
+  });
+
+  function openConversation(sender) {
+    activeSender = sender;
+    title.textContent = sender;
+    replyInput.value = "";
+    replyStatus.textContent = "";
+    renderThread(sender, true);
     dialog.showModal();
     thread.scrollTop = thread.scrollHeight;
     var activeWrites = marking;
@@ -487,6 +640,9 @@ function smsPreview() {
         messages = next;
         state = nextState;
         render();
+        if (dialog.open && activeSender) {
+          renderThread(activeSender);
+        }
       });
     },
   };
@@ -681,7 +837,7 @@ return view.extend({
       live,
       lowerGrid,
       E("nav", { class: "cpe-shortcuts", "aria-label": "CPE 快捷入口" }, [
-        link("模组管理", "admin/modem/qmodem/overview"),
+        link("更多信息", "admin/modem/qmodem/overview"),
         link("流量统计", "admin/modem/qmodem/traffic"),
         link("短信", "admin/modem/qmodem/sms"),
       ]),
