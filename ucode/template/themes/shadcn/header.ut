@@ -41,7 +41,7 @@
 -%}
 
 <!DOCTYPE html>
-<html lang="{{ dispatcher.lang }}" data-shadcn-media="{{ media }}">
+<html lang="{{ dispatcher.lang }}" data-shadcn-media="{{ media }}"{% if (match(http.getenv('HTTP_USER_AGENT') ?? '', /Windows/)): %} data-os="win"{% endif %}>
 	<head>
 		<meta charset="utf-8">
 		<meta name="theme-color" content="#f9fafd" media="(prefers-color-scheme: light)">

@@ -74,15 +74,19 @@ html[data-sidebar-collapsed="true"] #sidebar {
 
 .sidebar-nav-item,
 .sidebar-accordion-item {
-  @apply mb-0.5;
+  @apply mb-1;
 
   &.active > .sidebar-nav-parent {
     @apply bg-sidebar-active-bg text-sidebar-active-fg;
   }
 }
 
+[data-os="win"] .sidebar-label {
+  translate: 0 1px;
+}
+
 .sidebar-nav-parent {
-  @apply text-sidebar-muted flex w-full cursor-pointer appearance-none items-center justify-start gap-2.5 rounded-md border-0 bg-transparent px-2 py-1.5 text-left text-sm font-medium [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted flex h-8 w-full cursor-pointer appearance-none items-center justify-start gap-2.5 rounded-md border-0 bg-transparent px-2 text-left text-sm font-medium [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg;
@@ -156,7 +160,7 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-sub-item {
-  @apply mb-0.5;
+  @apply mb-1;
 
   &.active .sidebar-sub-link {
     @apply text-sidebar-active-fg font-medium;
@@ -164,7 +168,7 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-sub-link {
-  @apply text-sidebar-muted block rounded-md px-2 py-1.5 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted flex h-8 items-center rounded-md px-2 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg no-underline;
