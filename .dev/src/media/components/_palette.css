@@ -9,7 +9,7 @@
 /* ── Trigger ─────────────────────────────────────────────────────── */
 
 button.cmdk-trigger {
-  @apply border-input text-muted-foreground relative flex h-8 cursor-pointer items-center gap-2.5 rounded-lg border bg-transparent pr-1.5 pl-7.5 text-sm;
+  @apply border-input text-muted-foreground relative flex h-8 cursor-pointer items-center gap-2.5 rounded-lg border bg-transparent pr-1.5 pl-7.5;
   @apply max-md:w-8 max-md:justify-center max-md:border-0 max-md:p-0;
 
   &::before {
@@ -27,7 +27,8 @@ button.cmdk-trigger {
 }
 
 .cmdk-trigger-key {
-  @apply border-border bg-label-surface text-muted-foreground rounded-md border px-1.5 py-px font-mono text-xs max-md:hidden;
+  @apply border-border bg-label-surface text-muted-foreground rounded-md border px-1.5 py-px font-mono max-md:hidden;
+  font-size: 0.758rem;
 }
 
 /* ── Overlay & panel ─────────────────────────────────────────────── */

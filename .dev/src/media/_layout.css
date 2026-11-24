@@ -50,7 +50,7 @@ html[data-sidebar-collapsed="true"] #sidebar {
 }
 
 .sidebar-brand-text {
-  @apply truncate text-sm font-semibold;
+  @apply truncate font-semibold;
 }
 
 .sidebar-toggle {
@@ -62,7 +62,8 @@ html[data-sidebar-collapsed="true"] #sidebar {
 
   svg,
   img {
-    @apply h-4 w-4;
+    width: 1.01rem;
+    height: 1.01rem;
   }
 }
 
@@ -70,6 +71,14 @@ html[data-sidebar-collapsed="true"] #sidebar {
 
 .sidebar-nav {
   @apply flex-1 overflow-x-hidden overflow-y-auto px-2 py-2;
+}
+
+.sidebar-brand-text,
+.sidebar-nav-parent,
+.sidebar-sub-link,
+.topbar-breadcrumb,
+button.cmdk-trigger {
+  font-size: 0.884rem;
 }
 
 .sidebar-nav-item,
@@ -86,7 +95,7 @@ html[data-sidebar-collapsed="true"] #sidebar {
 }
 
 .sidebar-nav-parent {
-  @apply text-sidebar-muted flex h-8 w-full cursor-pointer appearance-none items-center justify-start gap-2.5 rounded-md border-0 bg-transparent px-2 text-left text-sm font-medium [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted flex h-8 w-full cursor-pointer appearance-none items-center justify-start gap-2.5 rounded-md border-0 bg-transparent px-2 text-left font-medium [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg;
@@ -96,7 +105,8 @@ html[data-sidebar-collapsed="true"] #sidebar {
     @apply flex shrink-0 items-center justify-center;
     svg,
     img {
-      @apply h-4 w-4;
+      width: 1.01rem;
+      height: 1.01rem;
     }
   }
 
@@ -168,7 +178,7 @@ a.sidebar-nav-parent {
 }
 
 .sidebar-sub-link {
-  @apply text-sidebar-muted flex h-8 items-center rounded-md px-2 text-sm [transition:color_.15s,background-color_.15s,border-color_.15s];
+  @apply text-sidebar-muted flex h-8 items-center rounded-md px-2 [transition:color_.15s,background-color_.15s,border-color_.15s];
 
   &:hover {
     @apply bg-sidebar-accent text-sidebar-accent-fg no-underline;
@@ -282,7 +292,7 @@ html[data-sidebar-anim] #sidebar {
 }
 
 .topbar-breadcrumb {
-  @apply flex items-center gap-1 text-sm;
+  @apply flex items-center gap-1;
 
   .breadcrumb-item {
     @apply text-muted-foreground;
