@@ -15,6 +15,7 @@
         ],
         "qmodem": ["base_info", "cell_info", "sim_info"],
         "qmodem.traffic": ["current", "get"],
+        "qmodem.update": ["status", "check"],
         "file": ["read", "exec"]
       },
       "uci": ["qmodem", "network", "wireless", "luci", "firewall"],

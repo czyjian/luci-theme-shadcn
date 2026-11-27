@@ -414,3 +414,6 @@ body:has(.cpe-dashboard) .content-card {
     @apply max-md:p-4;
   }
 }
+.cpe-dashboard .cpe-update-actions {
+  @apply mt-4 flex justify-end;
+}

@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "component": "theme",
+  "repository": "czyjian/luci-theme-shadcn",
+  "version": "0.6.3-r20261104",
+  "revision": "36a4bdd538a0d4adbecda57dc330ce294bd35ddb",
+  "modified": true,
+  "build_id": "5aedcdf8bad120e4",
+  "files": {
+    "/www/luci-static/resources/view/shadcn/cpe.js": "0468ee3212b6a2a374e662d0db2434195e306bed4ad99d42933363e9c398b229",
+    "/www/luci-static/resources/view/shadcn/updates.js": "e13e3b231100af41ad166ab31d23f4034d64e0ef4a1673f3c640314efe66b6a1",
+    "/www/luci-static/shadcn/main.css": "89f79fae9f77e911d22dc6d6dedc3c0deaa48b2024ad07a309de0ecd51fb2288",
+    "/www/luci-static/shadcn/cpe.css": "4dac125ed4bee0f6a59274fdd8ad4286c53a17612204a79bf84e823a778b9f4a"
+  }
+}

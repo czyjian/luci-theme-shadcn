@@ -1,3 +1,4 @@
+import { writeThemeManifest } from "../.dev/scripts/build-update-state.mjs";
 import fs from "node:fs/promises";
 import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
@@ -10,6 +11,7 @@ const content = (s) =>
     .replaceAll("/luci-static/shadcn", "/luci-static/shadcn-shane")
     .replaceAll("themes/shadcn", "themes/shadcn-shane")
     .replaceAll("shadcn/cpe", "shadcn-shane/cpe")
+    .replaceAll("view.shadcn.updates", "view.shadcn-shane.updates")
     .replaceAll("menu-shadcn", "menu-shadcn-shane")
     .replaceAll("notifications-shadcn", "notifications-shadcn-shane")
     .replaceAll("sidebar-shadcn", "sidebar-shadcn-shane")
@@ -51,4 +53,11 @@ uci commit luci
 exit 0
 `,
 );
+const metadata = JSON.parse(
+  await fs.readFile(
+    path.join(root, "root/usr/share/luci-theme-shadcn/build.json"),
+    "utf8",
+  ),
+);
+await writeThemeManifest(target, metadata);
 console.log(target);

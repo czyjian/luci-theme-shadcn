@@ -5,6 +5,7 @@
 "require poll";
 "require network";
 "require fs";
+"require view.shadcn.updates as updates";
 
 var info = rpc.declare({ object: "system", method: "info" });
 var board = rpc.declare({ object: "system", method: "board" });
@@ -848,6 +849,7 @@ return view.extend({
         link("流量统计", "admin/modem/qmodem/traffic"),
         link("短信", "admin/modem/qmodem/sms"),
       ]),
+      updates.render(),
       sms.dialog,
     );
     function paint(r, id, loaded) {
