@@ -1,0 +1,22 @@
+/* Shared LuCI help text in forms, sections and modal dialogs. */
+.cbi-value-description {
+  @apply text-muted-foreground relative mt-1 max-w-full min-w-0 pl-[1.5em] text-sm [overflow-wrap:anywhere];
+  line-height: round(nearest, 1.5em, 1px);
+
+  &:empty {
+    @apply hidden;
+  }
+
+  &:not(:empty) {
+    @apply before:bg-primary before:absolute before:left-0 before:[mask-image:url('@assets/icons/info.svg')] before:[mask-size:contain] before:[mask-position:center] before:[mask-repeat:no-repeat] before:content-[''];
+    &::before {
+      width: round(nearest, 1em, 1px);
+      height: round(nearest, 1em, 1px);
+      top: round(nearest, calc((1lh - 1em) / 2), 1px);
+    }
+  }
+
+  > .qmodem-tip-text {
+    @apply inline;
+  }
+}

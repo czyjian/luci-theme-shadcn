@@ -36,6 +36,7 @@
 @import "./components/_table.css";
 @import "./components/_syslog.css";
 @import "./components/_form.css";
+@import "./components/_description.css";
 @import "./components/_tabs.css";
 @import "./components/_palette.css";
 @import "./components/_view-transitions.css";
