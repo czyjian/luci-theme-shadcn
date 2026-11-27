@@ -844,12 +844,14 @@ return view.extend({
     root.append(
       live,
       lowerGrid,
-      E("nav", { class: "cpe-shortcuts", "aria-label": "CPE 快捷入口" }, [
-        link("更多信息", "admin/modem/qmodem/overview"),
-        link("流量统计", "admin/modem/qmodem/traffic"),
-        link("短信", "admin/modem/qmodem/sms"),
+      E("div", { class: "cpe-footer" }, [
+        E("nav", { class: "cpe-shortcuts", "aria-label": "CPE 快捷入口" }, [
+          link("更多信息", "admin/modem/qmodem/overview"),
+          link("流量统计", "admin/modem/qmodem/traffic"),
+          link("短信", "admin/modem/qmodem/sms"),
+        ]),
+        updates.render(),
       ]),
-      updates.render(),
       sms.dialog,
     );
     function paint(r, id, loaded) {

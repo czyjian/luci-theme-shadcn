@@ -414,6 +414,14 @@ body:has(.cpe-dashboard) .content-card {
     @apply max-md:p-4;
   }
 }
-.cpe-dashboard .cpe-update-actions {
-  @apply mt-4 flex justify-end;
+.cpe-dashboard {
+  .cpe-footer {
+    @apply flex flex-wrap items-center justify-between gap-3 pb-3;
+  }
+  .cpe-footer > .cpe-shortcuts {
+    @apply pb-0;
+  }
+  .cpe-update-actions {
+    @apply ml-auto flex shrink-0 justify-end;
+  }
 }
