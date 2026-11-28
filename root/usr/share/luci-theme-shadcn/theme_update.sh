@@ -99,7 +99,10 @@ if [ "$format" = apk ]; then
  apk add --simulate --allow-untrusted "$file" >"$base/preflight.log" 2>&1 || fail '安装检查失败，请检查可用空间和软件包依赖'
  apk add --wait 30 --allow-untrusted --progress-fd 3 "$file" 3>"$base/progress" >"$base/install.log" 2>&1 & install=$!
  while kill -0 "$install" 2>/dev/null; do
-  percent=$(tr '\r' '\n' <"$base/progress" | grep -E '^[0-9]+$' | tail -1); percent=${percent:-0}
+  percent=$(awk '
+   /^[0-9]+$/ { p=$1 }
+   $1 ~ /^[0-9]+\/[0-9]+$/ { split($1,a,"/"); if(a[2]>0)p=int(a[1]*100/a[2]) }
+   END { print p+0 }' "$base/progress")
   [ "$percent" -le 99 ] || percent=99
   state installing "$percent"
   sleep 1
