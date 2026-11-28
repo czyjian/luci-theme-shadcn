@@ -13,6 +13,7 @@ var remoteStatus = rpc.declare({
 });
 function sourceState(remote) {
   if (!remote) return "正在检查…";
+  if (remote.state === "unpublished") return "暂无正式版本";
   if (remote.state === "ahead") return "有更新";
   if (remote.state === "identical" || remote.state === "behind")
     return "暂无更新";
@@ -34,7 +35,7 @@ return L.Class.extend({
       var rows = {};
       [
         ["qmodem", "QModem"],
-        ["theme", "shadcn"],
+        ["theme", "luci-theme-shadcn"],
       ].forEach(function (item) {
         var version = E("td", { class: "td" }, "—"),
           state = E("td", { class: "td" }, "正在检查…");
@@ -85,6 +86,24 @@ return L.Class.extend({
               data.remote && data.remote.busy
                 ? "请稍后重试"
                 : sourceState(result || { state: "failed" });
+            if (result && result.state === "ahead") {
+              row.state.appendChild(document.createTextNode(" "));
+              row.state.appendChild(
+                E(
+                  "a",
+                  {
+                    class: "cbi-button cbi-button-action",
+                    href:
+                      component.name === "theme"
+                        ? "https://github.com/czyjian/luci-theme-shadcn/releases"
+                        : "https://github.com/czyjian/QModem/releases",
+                    target: "_blank",
+                    rel: "noopener noreferrer",
+                  },
+                  "前往下载",
+                ),
+              );
+            }
           }
         });
       }

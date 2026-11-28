@@ -2,13 +2,13 @@
   "schema": 1,
   "component": "theme",
   "repository": "czyjian/luci-theme-shadcn",
-  "version": "0.6.3-r20261104",
-  "revision": "d39945114a5dc5ca54d349bca22c0add986d45a7",
+  "version": "0.6.3-r2026112801",
+  "revision": "850cf7e039a46b6a04bffa268659ba242805f062",
   "modified": true,
-  "build_id": "ecd206c4ebdec708",
+  "build_id": "f08645678e4c1cdb",
   "files": {
     "/www/luci-static/resources/view/shadcn/cpe.js": "f57d74a2ba3e499a42c4be419fbc0ee8d049cd0837db64b4a1f6dbb66621e1e8",
-    "/www/luci-static/resources/view/shadcn/updates.js": "e13e3b231100af41ad166ab31d23f4034d64e0ef4a1673f3c640314efe66b6a1",
+    "/www/luci-static/resources/view/shadcn/updates.js": "12b54ec3a1a142a0762147a894c35d72b34f3531d72fd6ec50cd088c4ea0a8d2",
     "/www/luci-static/shadcn/main.css": "2f95e12553fca831b7f47abc54141ed6991d889084a7ac6a50e1598ea560b56e",
     "/www/luci-static/shadcn/cpe.css": "9ff8870afbbf498f3c9191c001f0cbde0b7c7938cde3ecb69d4a691fc406ccb5"
   }
