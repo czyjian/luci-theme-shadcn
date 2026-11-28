@@ -1,3 +1,6 @@
 #!/bin/sh
-/etc/init.d/rpcd reload >/dev/null 2>&1 || true
+# Existing update workers must survive the package upgrade.
+if ! ubus list shadcn.update 2>/dev/null | grep -q '^shadcn.update$'; then
+ /etc/init.d/rpcd reload >/dev/null 2>&1 || true
+fi
 exit 0
