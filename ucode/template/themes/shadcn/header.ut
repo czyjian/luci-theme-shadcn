@@ -64,7 +64,7 @@
 		{% if (blank_page): %}
 		<link rel="stylesheet" href="{{ media }}/login.css">
 		{% else %}
-		<link rel="stylesheet" href="{{ media }}/main.css" data-luci-shell>
+		<link rel="stylesheet" href="{{ media }}/main.css?v={# PKG_VERSION #}-layout2" data-luci-shell>
 		<link rel="stylesheet" href="{{ media }}/notifications.css?v={# PKG_VERSION #}" data-luci-shell>
 		{% for (let patch in patch_files): %}
 		<link rel="stylesheet" href="{{ media }}/patches/{{ patch }}.css" data-luci-patch="{{ patch }}">
@@ -89,7 +89,7 @@
 		{% endif %}
 	</head>
 
-	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}"{% if (!blank_page): %} data-nav-stamp="{{ entityencode(join(':', [dispatcher.lang, ctx?.authuser ?? '', ctx?.authsession ?? '']), true) }}:{# PKG_VERSION #}"{% endif %}{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
+	<body class="lang_{{ dispatcher.lang }}" data-page="{{ entityencode(page, true) }}" data-asset-version="{# PKG_VERSION #}-layout2"{% if (!blank_page): %} data-nav-stamp="{{ entityencode(join(':', [dispatcher.lang, ctx?.authuser ?? '', ctx?.authsession ?? '']), true) }}:{# PKG_VERSION #}"{% endif %}{% if (length(patch_all)): %} data-patches="{{ entityencode(join(' ', patch_all), true) }}"{% endif %}>
 		{% if (!blank_page): %}
 
 		<div

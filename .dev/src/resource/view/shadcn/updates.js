@@ -153,8 +153,12 @@ return L.Class.extend({
         ["qmodem", "QModem"],
         ["theme", "luci-theme-shadcn"],
       ].forEach(function (item) {
-        var version = E("td", { class: "td" }, "—"),
-          state = E("td", { class: "td" }, "正在检查…"),
+        var version = E("td", { class: "td", "data-title": "当前版本" }, "—"),
+          state = E(
+            "td",
+            { class: "td", "data-title": "更新状态" },
+            "正在检查…",
+          ),
           action = E("td", {
             class: "td right",
             style: "width:1%;white-space:nowrap",
@@ -162,7 +166,7 @@ return L.Class.extend({
         rows[item[0]] = { version: version, state: state, action: action };
         body.appendChild(
           E("tr", { class: "tr" }, [
-            E("td", { class: "td" }, item[1]),
+            E("td", { class: "td", "data-title": "组件" }, item[1]),
             version,
             state,
             action,
@@ -170,11 +174,11 @@ return L.Class.extend({
         );
       });
       ui.showModal("检查更新", [
-        E("table", { class: "table" }, [
+        E("table", { class: "table shadcn-update-table" }, [
           E(
             "thead",
             {},
-            E("tr", { class: "tr" }, [
+            E("tr", { class: "tr cbi-section-table-titles" }, [
               E("th", { class: "th" }, "组件"),
               E("th", { class: "th" }, "当前版本"),
               E("th", { class: "th" }, "更新状态"),

@@ -62,7 +62,8 @@ test("production assets stay within raw-transfer budgets", () => {
   const font = bytes("shadcn/inter-latin-wght-normal.woff2");
   const logo = bytes("shadcn/images/logo.svg");
 
-  assert.ok(main <= 130_500, `main.css ${main} B exceeds 130.5 KB`);
+  // +506 B for the scoped mobile update-table layout; other tables are unchanged.
+  assert.ok(main <= 131_100, `main.css ${main} B exceeds 131.1 KB`);
   assert.ok(login <= 11_000, `login.css ${login} B exceeds 11 KB`);
   // 17.5K: palette tabs (third-level nodes, redirect-parent folding, legacy
   // recents mapping, parent-aware scoring, per-segment path words) added
@@ -73,9 +74,9 @@ test("production assets stay within raw-transfer budgets", () => {
   assert.ok(router <= 18_432, `router-shadcn.js ${router} B exceeds 18 KiB`);
   assert.ok(sidebar <= 6_500, `sidebar-shadcn.js ${sidebar} B exceeds 6.5 KB`);
   assert.ok(
-    // Sidebar leaf-link parity and upgrade-cache invalidation add < 1 KB.
-    main + menu + router + sidebar + font <= 220_500,
-    "admin assets exceed 220,500 B",
+    // Includes the scoped mobile update-table layout (+506 B).
+    main + menu + router + sidebar + font <= 221_100,
+    "admin assets exceed 221,100 B",
   );
   assert.ok(login + font + logo <= 60_000, "login assets exceed 60 KB");
 });

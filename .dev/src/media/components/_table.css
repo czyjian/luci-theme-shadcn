@@ -153,3 +153,32 @@ table.table,
 .cbi-section-table .cbi-section-table-titles .cbi-section-table-cell {
   @apply !w-auto;
 }
+
+/* Keep the compact update comparison as a table on mobile as well. */
+.table.shadcn-update-table {
+  @apply max-md:table max-md:table-fixed;
+
+  thead {
+    @apply max-md:table-header-group;
+  }
+
+  tbody {
+    @apply max-md:table-row-group;
+  }
+
+  tr,
+  tr.cbi-section-table-titles {
+    @apply max-md:table-row;
+  }
+
+  .th,
+  .td {
+    @apply max-md:table-cell max-md:min-w-0 max-md:px-1 max-md:py-2 max-md:wrap-anywhere;
+    @apply before:max-md:hidden;
+  }
+
+  .th:last-child,
+  .td:last-child {
+    @apply max-md:w-14;
+  }
+}
