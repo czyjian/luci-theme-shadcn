@@ -57,7 +57,7 @@ start)
  exec 9>/var/lock/qmodem-theme-update.lock
  if ! flock -n 9; then echo '{"started":false,"busy":true}'; exit 0; fi
  state downloading 0
- nohup /bin/sh "$0" run </dev/null >"$base/worker.log" 2>&1 &
+ (trap '' HUP; exec /bin/sh "$0" run) </dev/null >"$base/worker.log" 2>&1 &
  echo '{"started":true}'
  exit 0;;
 probe)
