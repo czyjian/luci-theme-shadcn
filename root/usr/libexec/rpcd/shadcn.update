@@ -1,0 +1,11 @@
+#!/bin/sh
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+case "$1" in
+list) echo '{"start":{},"status":{}}'; exit 0;;
+call) case "$2" in start|status) :;; *) exit 1;; esac;;
+*) exit 1;;
+esac
+read -r input
+worker=/usr/share/luci-theme-shadcn-shane/theme_update.sh
+[ -f "$worker" ] || worker=/usr/share/luci-theme-shadcn/theme_update.sh
+exec /bin/sh "$worker" "$2"

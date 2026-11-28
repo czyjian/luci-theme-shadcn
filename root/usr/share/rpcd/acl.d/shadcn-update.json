@@ -1,0 +1,7 @@
+{
+  "shadcn-update": {
+    "description": "Theme automatic updates",
+    "read": { "ubus": { "shadcn.update": ["status"] } },
+    "write": { "ubus": { "shadcn.update": ["start"] } }
+  }
+}

@@ -25,7 +25,10 @@ async function copy(from, to) {
   await fs.mkdir(to, { recursive: true });
   for (const ent of await fs.readdir(from, { withFileTypes: true })) {
     const src = path.join(from, ent.name),
-      dst = path.join(to, rename(ent.name));
+      dst = path.join(
+        to,
+        ent.name === "shadcn.update" ? ent.name : rename(ent.name),
+      );
     if (ent.isDirectory()) await copy(src, dst);
     else {
       const buf = await fs.readFile(src);
@@ -42,9 +45,16 @@ async function copy(from, to) {
 await fs.mkdir(target, { recursive: true });
 for (const dir of ["htdocs", "ucode", "root"])
   await copy(path.join(root, dir), path.join(target, dir));
+await fs.chmod(path.join(target, "root/usr/libexec/rpcd/shadcn.update"), 0o755);
+await fs.chmod(
+  path.join(target, "root/etc/uci-defaults/31_shadcn-shane-update"),
+  0o755,
+);
 await fs.copyFile(path.join(root, "LICENSE"), path.join(target, "LICENSE"));
 let make = await fs.readFile(path.join(root, "Makefile"), "utf8");
-make = make.replace("LUCI_TITLE:=", "LUCI_TITLE:=Shadcn_Shane - ");
+make = make
+  .replace("LUCI_TITLE:=", "LUCI_TITLE:=Shadcn_Shane - ")
+  .replaceAll("Package/luci-theme-shadcn/", "Package/luci-theme-shadcn-shane/");
 await fs.writeFile(path.join(target, "Makefile"), make);
 await fs.writeFile(
   path.join(target, "root/etc/uci-defaults/30_luci-theme-shadcn-shane"),
