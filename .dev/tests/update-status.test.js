@@ -25,74 +25,88 @@ test("update dialog keeps statuses concise and never calls unrecorded revisions 
   assert(!source.includes("本地修改"));
 });
 
-test("theme installer renders real phases and removes progress on completion", async () => {
-  let modal,
-    pending = [];
-  function element(tag, attrs = {}, children) {
-    const list =
-      children == null ? [] : Array.isArray(children) ? children : [children];
-    return {
-      tag,
-      attrs,
-      style: {},
-      children: list,
-      disabled: !!attrs.disabled,
-      firstChild:
-        typeof list[0] === "object" ? list[0] : { textContent: list[0] },
-      setAttribute(k, v) {
-        this.attrs[k] = v;
+for (const component of ["theme", "qmodem"])
+  test(`${component} installer renders phases and refreshes only on close`, async () => {
+    let modal,
+      pending = [];
+    function element(tag, attrs = {}, children) {
+      const list =
+        children == null ? [] : Array.isArray(children) ? children : [children];
+      return {
+        tag,
+        attrs,
+        style: {},
+        children: list,
+        disabled: !!attrs.disabled,
+        firstChild:
+          typeof list[0] === "object" ? list[0] : { textContent: list[0] },
+        setAttribute(k, v) {
+          this.attrs[k] = v;
+        },
+        remove() {
+          this.removed = true;
+        },
+      };
+    }
+    const states = [
+      { phase: "downloading", percent: 42 },
+      { phase: "installing", percent: 65 },
+      { phase: "complete", percent: 100 },
+    ];
+    const api = new Function(
+      "rpc",
+      "L",
+      "E",
+      "ui",
+      "window",
+      source.replace(
+        "return L.Class.extend({",
+        "return {showThemeUpdate,showQModemUpdate}; return L.Class.extend({",
+      ),
+    )(
+      {
+        declare: (spec) =>
+          spec.object === "shadcn.update" &&
+          spec.method === (component === "theme" ? "start" : "qmodem_start")
+            ? async () => ({ started: true })
+            : async () => states.shift(),
       },
-      remove() {
-        this.removed = true;
+      {},
+      element,
+      {
+        showModal: (title, nodes) => {
+          modal = nodes;
+        },
+        hideModal() {},
       },
+      {
+        setTimeout: (fn) => pending.push(fn),
+        location: {
+          reload() {
+            reloaded = true;
+          },
+        },
+      },
+    );
+    let reloaded = false;
+    api[component === "theme" ? "showThemeUpdate" : "showQModemUpdate"]();
+    const flush = async () => {
+      for (let i = 0; i < 8; i++) await Promise.resolve();
     };
-  }
-  const states = [
-    { phase: "downloading", percent: 42 },
-    { phase: "installing", percent: 65 },
-    { phase: "complete", percent: 100 },
-  ];
-  const api = new Function(
-    "rpc",
-    "L",
-    "E",
-    "ui",
-    "window",
-    source.replace(
-      "return L.Class.extend({",
-      "return {showThemeUpdate}; return L.Class.extend({",
-    ),
-  )(
-    {
-      declare: (spec) =>
-        spec.object === "shadcn.update" && spec.method === "start"
-          ? async () => ({ started: true })
-          : async () => states.shift(),
-    },
-    {},
-    element,
-    {
-      showModal: (title, nodes) => {
-        modal = nodes;
-      },
-      hideModal() {},
-    },
-    { setTimeout: (fn) => pending.push(fn) },
-  );
-  api.showThemeUpdate();
-  const flush = async () => {
-    for (let i = 0; i < 8; i++) await Promise.resolve();
-  };
-  await flush();
-  assert.equal(modal[0].textContent, "正在下载...");
-  assert.equal(modal[1].attrs["aria-valuenow"], "42");
-  pending.shift()();
-  await flush();
-  assert.equal(modal[0].textContent, "正在安装...");
-  assert.equal(modal[1].attrs["aria-valuenow"], "65");
-  pending.shift()();
-  await flush();
-  assert.equal(modal[0].textContent, "更新完成");
-  assert.equal(modal[1].removed, true);
-  assert.equal(modal[2].children[0].disabled, false);
-});
+    await flush();
+    assert.equal(modal[0].textContent, "正在下载...");
+    assert.equal(modal[1].attrs["aria-valuenow"], "42");
+    pending.shift()();
+    await flush();
+    assert.equal(modal[0].textContent, "正在安装...");
+    assert.equal(modal[1].attrs["aria-valuenow"], "65");
+    pending.shift()();
+    await flush();
+    assert.equal(modal[0].textContent, "更新完成");
+    assert.equal(modal[1].removed, true);
+    assert.equal(modal[2].children[0].disabled, false);
+    assert.equal(reloaded, false);
+    assert.equal(pending.length, 0);
+    modal[2].children[0].onclick();
+    assert.equal(reloaded, true);
+  });

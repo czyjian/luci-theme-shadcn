@@ -21,7 +21,27 @@ var themeUpdateStatus = rpc.declare({
   method: "status",
   expect: {},
 });
+var startQModemUpdate = rpc.declare({
+  object: "shadcn.update",
+  method: "qmodem_start",
+  expect: {},
+});
+var qmodemUpdateStatus = rpc.declare({
+  object: "shadcn.update",
+  method: "qmodem_status",
+  expect: {},
+});
 function showThemeUpdate() {
+  return showSoftwareUpdate("theme");
+}
+function showQModemUpdate() {
+  return showSoftwareUpdate("qmodem");
+}
+function showSoftwareUpdate(component) {
+  var startUpdate =
+    component === "qmodem" ? startQModemUpdate : startThemeUpdate;
+  var updateStatus =
+    component === "qmodem" ? qmodemUpdateStatus : themeUpdateStatus;
   var title = E(
     "p",
     { style: "text-align:center", role: "status", "aria-live": "polite" },
@@ -49,14 +69,13 @@ function showThemeUpdate() {
     },
     "关闭",
   );
-  ui.showModal("更新 luci-theme-shadcn", [
-    title,
-    progress,
-    E("div", { class: "right" }, close),
-  ]);
+  ui.showModal(
+    component === "qmodem" ? "更新 QModem" : "更新 luci-theme-shadcn",
+    [title, progress, E("div", { class: "right" }, close)],
+  );
   var failures = 0;
   function poll() {
-    themeUpdateStatus()
+    updateStatus()
       .then(function (data) {
         failures = 0;
         var percent = Math.max(0, Math.min(100, Number(data.percent) || 0));
@@ -67,6 +86,9 @@ function showThemeUpdate() {
           title.textContent = "更新完成";
           progress.remove();
           close.disabled = false;
+          close.onclick = function () {
+            window.location.reload();
+          };
           return;
         }
         if (data.phase === "failed") {
@@ -89,8 +111,16 @@ function showThemeUpdate() {
         close.disabled = false;
       });
   }
-  startThemeUpdate()
-    .then(poll)
+  startUpdate()
+    .then(function (result) {
+      if (result && result.busy) {
+        title.textContent = "有其他更新任务正在进行，请稍后重试";
+        progress.remove();
+        close.disabled = false;
+        return;
+      }
+      poll();
+    })
     .catch(function () {
       title.textContent = "无法启动更新，请刷新页面后重试";
       progress.remove();
@@ -181,26 +211,18 @@ return L.Class.extend({
             if (result && result.state === "ahead") {
               row.action.textContent = "";
               row.action.appendChild(
-                component.name === "theme"
-                  ? E(
-                      "button",
-                      {
-                        type: "button",
-                        class: "cbi-button cbi-button-action",
-                        click: showThemeUpdate,
-                      },
-                      "更新",
-                    )
-                  : E(
-                      "a",
-                      {
-                        class: "cbi-button cbi-button-action",
-                        href: "https://github.com/czyjian/QModem/releases",
-                        target: "_blank",
-                        rel: "noopener noreferrer",
-                      },
-                      "更新",
-                    ),
+                E(
+                  "button",
+                  {
+                    type: "button",
+                    class: "cbi-button cbi-button-action",
+                    click:
+                      component.name === "theme"
+                        ? showThemeUpdate
+                        : showQModemUpdate,
+                  },
+                  "更新",
+                ),
               );
             }
           }

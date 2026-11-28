@@ -1,1 +1,15 @@
-{"schema":1,"component":"theme","repository":"czyjian/luci-theme-shadcn","version":"0.6.3-r2026112803","revision":"52e8a83a8b87bd85356a3c0da13abed2c3a9df97","modified":true,"build_id":"2959aea666941b6f","files":{"/www/luci-static/resources/view/shadcn/cpe.js":"f57d74a2ba3e499a42c4be419fbc0ee8d049cd0837db64b4a1f6dbb66621e1e8","/www/luci-static/resources/view/shadcn/updates.js":"2f69c76a018504ec4731c791b30d9ed500374862d147c57861788610933e3464","/www/luci-static/shadcn/main.css":"2f95e12553fca831b7f47abc54141ed6991d889084a7ac6a50e1598ea560b56e","/www/luci-static/shadcn/cpe.css":"9ff8870afbbf498f3c9191c001f0cbde0b7c7938cde3ecb69d4a691fc406ccb5"}}
+{
+  "schema": 1,
+  "component": "theme",
+  "repository": "czyjian/luci-theme-shadcn",
+  "version": "0.6.3-r2026112804",
+  "revision": "c28085d7a89f2c9d6394356dfb6bfa2badbe9354",
+  "modified": true,
+  "build_id": "a72ef1f31cfa426a",
+  "files": {
+    "/www/luci-static/resources/view/shadcn/cpe.js": "f57d74a2ba3e499a42c4be419fbc0ee8d049cd0837db64b4a1f6dbb66621e1e8",
+    "/www/luci-static/resources/view/shadcn/updates.js": "6640a2b3417be28039c08291517a1fa3791fc08797f921ab4fb67208967e3eab",
+    "/www/luci-static/shadcn/main.css": "2f95e12553fca831b7f47abc54141ed6991d889084a7ac6a50e1598ea560b56e",
+    "/www/luci-static/shadcn/cpe.css": "9ff8870afbbf498f3c9191c001f0cbde0b7c7938cde3ecb69d4a691fc406ccb5"
+  }
+}

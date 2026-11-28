@@ -1,7 +1,7 @@
 {
   "shadcn-update": {
     "description": "Theme automatic updates",
-    "read": { "ubus": { "shadcn.update": ["status"] } },
-    "write": { "ubus": { "shadcn.update": ["start"] } }
+    "read": { "ubus": { "shadcn.update": ["status", "qmodem_status"] } },
+    "write": { "ubus": { "shadcn.update": ["start", "qmodem_start"] } }
   }
 }
